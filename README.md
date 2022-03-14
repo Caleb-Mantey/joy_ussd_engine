@@ -209,6 +209,14 @@ class Menus::MainMenu < JoyUssdEngine::Menu
 end
 ```
 
+This will be rendered out to the user when this menu is executed for the first
+
+![Menu1](./menu_doc1.png)
+
+When the user enters a value which is not the string `john doe` an error will be displayed like we see in the screenshot below.
+
+![Menu2](./menu_doc2.png)
+
 #### Menu Routes
 
 You can show a list of menu items with their corresponding routes. When the user selects any menu it will automatically route to the selected menu.
