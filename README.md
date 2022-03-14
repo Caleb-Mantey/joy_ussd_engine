@@ -209,11 +209,11 @@ class Menus::MainMenu < JoyUssdEngine::Menu
 end
 ```
 
-This will be rendered out to the user when this menu is executed for the first
+This will be rendered out to the user when this menu is executed for the first time.
 
 ![Menu1](./menu_doc1.png)
 
-When the user enters a value which is not the string `john doe` an error will be displayed like we see in the screenshot below.
+When the user enters a value which is not the string `"john doe"` an error will be displayed like we see in the screenshot below.
 
 ![Menu2](./menu_doc2.png)
 
@@ -230,18 +230,23 @@ class Menus::InitialMenu < JoyUssdEngine::Menu
         @field_name='initiation'
         @skip_save = true
         
-        # show a list of menu items on screen with their routes
+        # Store a list of menu items with their routes
         @menu_items = [
-            {title: 'Make Payments', route: Ussd::Menus::MakePayments}, 
-            {title: 'View Transaction', route: Ussd::Menus::ViewTransaction}
+            {title: 'Make Payments', route: Menus::MakePayments}, 
+            {title: 'View Transaction', route: Menus::ViewTransaction}
         ]
 
+        # Show menu items on screen with the show_menu method. 
+        # The show_menu takes an optional parameter which is used to display the title of the page.
         @menu_text = show_menu('Welcome to JoyUssdEngine')
     end
 
     def render
         # Render ussd menu here
-        joy_response(Menus::NextMenu)
+
+        # Use this to load the menu the user selects
+        # get_selected_item automatically listens to user inputs and passes the selected menu into load_menu method
+        load_menu(get_selected_item)
     end
 end
 ```
@@ -249,6 +254,30 @@ end
 This will be rendered out when this menu is executed
 
 ![MenuRoutes](./menu_items_routes.png)
+
+If the `Menus::ViewTransaction` has a structure like this. 
+
+```ruby
+class Menus::ViewTransaction < JoyUssdEngine::Menu
+
+    def before_render
+        # Implement before call backs
+        
+        @menu_text = "Transactions. \n1. ERN_CODE_SSD\n2. ERN_DESA_DAS\nThanks for using our services."
+    end
+
+    def render
+        # Render ussd menu here
+        joy_release
+    end
+end
+```
+
+When the user enters 2 in the `Menus::InitialMenu` menu then the following will be rendered and the user session will be terminated.
+
+The `Menus::ViewTransaction` menu uses the `joy_release` method to render out the text stored in the `@menu_text` variable and ends the user session.
+
+![transaction](./transactions_menu.png)
 
 ## Development
 
