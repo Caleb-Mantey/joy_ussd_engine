@@ -211,7 +211,8 @@ end
 
 #### Menu Routes
 
-You can show a list of menus with their corresponding routes. When the user selects any menu it will automatically route to the menu the user selected.
+You can show a list of menu items with their corresponding routes. When the user selects any menu it will automatically route to the selected menu.
+When the user selects a menu that is not in the list an error is displayed to the user and the user session wil be terminated.
 
 ```ruby
 class Menus::InitialMenu < JoyUssdEngine::Menu
@@ -223,8 +224,8 @@ class Menus::InitialMenu < JoyUssdEngine::Menu
         
         # show a list of menu items on screen with their routes
         @menu_items = [
-            {title: 'Make Payments', route: Ussd::Menus::SendMenu}, 
-            {title: 'View Transaction', route: Ussd::Menus::RequestMenu}
+            {title: 'Make Payments', route: Ussd::Menus::MakePayments}, 
+            {title: 'View Transaction', route: Ussd::Menus::ViewTransaction}
         ]
 
         @menu_text = show_menu('Welcome to JoyUssdEngine')
@@ -236,7 +237,9 @@ class Menus::InitialMenu < JoyUssdEngine::Menu
     end
 end
 ```
+
 This will be rendered out when this menu is executed
+
 ![MenuRoutes](./menu_items_routes.png)
 
 ## Development
