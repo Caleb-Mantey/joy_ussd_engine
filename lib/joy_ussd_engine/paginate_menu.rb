@@ -41,7 +41,7 @@ module JoyUssdEngine
             paginated_items
         end
 
-        def show_menu(items=[], title = '')
+        def show_menu(items=[], title: '', key: '')
 
             return if has_selected?
             
@@ -58,7 +58,7 @@ module JoyUssdEngine
             
             first_option = item_number
             items.each do |m|
-              tmp_menu << "#{first_option+=1}. #{m}"
+              tmp_menu << "#{first_option+=1}. #{key.blank? ? m : m[:"#{key}"]}"
             end
 
             tmp_menu << "#{back_key}. Back" if back_menu
@@ -91,7 +91,7 @@ module JoyUssdEngine
             selected_item = nil
             check_input = is_numeric(@context.params[:message]) && @context.params[:message].to_i != 0
             if check_input 
-                selected_item = @paginating_items_selector.blank? ? @paginating_items[@context.params[:message].to_i - 1] : @paginating_items_selector[@context.params[:message].to_i - 1]
+                selected_item = @paginating_items[@context.params[:message].to_i - 1]
             end
             
 

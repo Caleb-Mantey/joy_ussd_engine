@@ -78,7 +78,7 @@ A data transformer transforms the incoming request and outgoing response between
 
 - #### Methods
 
-| method         | parameters                                 | return_value  | Description                                                                                                                                                                                             |
+| Method         | Parameters                                 | Return Value  | Description                                                                                                                                                                                             |
 | -------------- | ------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | request_params | params: [hash]()                           | [hash]()      | Converts the incoming request into a format the ussd engine can understand. The hash is the params coming from the post request in a rails controller that calls `JoyUssdEngine::Core.new`.             |
 | response       | message: [string](), app_state: [string]() | [hash]()      | Converts the outgoing response coming from the ussd engine into a format the provider can understand. `(eg of providers: Whatsapp, Twilio, Hubtel, Telegram, etc.)`                                     |
@@ -141,9 +141,9 @@ end
 
 Menus are simply the views for our application. They contain the code for rendering the text and menus that display on the user's device. Also they contain the business logic for your app. 
 
-#### Properties
+#### Menu Properties<a id="menu"></a>
 
-| properties  | type                                           | Description                                                                                                                             |
+| Properties  | Type                                           | Description                                                                                                                             |
 | ----------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | context     | object                                         | Provides methods for setting and getting state values                                                                                   |
 | field_name* | string                                         | The name for a particular input field. This name can be used to later retrieve the value the user entered in that field. (**Required**) |
@@ -156,13 +156,21 @@ Menus are simply the views for our application. They contain the code for render
 
 #### Lifecycle Methods
 
-| methods       | Description                                                                                                                                              |
+| Methods       | Description                                                                                                                                              |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | before_render | Do all data processing and business logic here.                                                                                                          |
 | render        | Render the ussd menu here. This is for only rendering out the response. (Only these methods `joy_release`, `joy_response`, `load_menu` can be used here) |
 | after_render  | After rendering out the ussd menu you can put any additional logic here.                                                                                 |
 | on_validate   | Validate user input here.                                                                                                                                |
 | on_error      | This method will be called when the `field_error` value is set to true. You can change the error message and render it to the user here.                 |
+
+#### Other Methods
+
+| Methods           | Description                                                            |
+| ----------------- | ---------------------------------------------------------------------- |
+| show_menu         | Returns a list of menus stored in the `menu_items` variable            |
+| get_selected_item | Gets the selected menu from the `menu_items` array                     |
+| has_selected?     | Checks if the user has selected an item in from the `menu_items` array |
 
 #### Creating a menu
 
@@ -211,11 +219,11 @@ end
 
 This will be rendered out to the user when this menu is executed for the first time.
 
-![Menu1](./menu_doc1.png)
+![Menu1](./images/menu_doc1.png)
 
 When the user enters a value which is not the string `"john doe"` an error will be displayed like we see in the screenshot below.
 
-![Menu2](./menu_doc2.png)
+![Menu2](./images/menu_doc2.png)
 
 #### Menu Routes
 
@@ -253,7 +261,7 @@ end
 
 This will be rendered out when this menu is executed
 
-![MenuRoutes](./menu_items_routes.png)
+![MenuRoutes](./images/menu_items_routes.png)
 
 If the `Menus::ViewTransaction` has a structure like this. 
 
@@ -275,9 +283,120 @@ end
 
 When the user enters 2 in the `Menus::InitialMenu` menu then the following will be rendered and the user session will be terminated.
 
+![transaction](./images/transactions_menu.png)
+
 The `Menus::ViewTransaction` menu uses the `joy_release` method to render out the text stored in the `@menu_text` variable and ends the user session.
 
-![transaction](./transactions_menu.png)
+### PaginateMenu
+
+A `PaginateMenu` handles pagination automatically for you. You can store an array of items that you want to paginate and they will be paginated automatically.
+A `PaginateMenu` has all the properties and methods in a `Menu` in addition to the following properties.
+
+#### PaginateMenu Properties
+
+A `PaginateMenu` has the following properties in addition properties in [Menu](#menu).
+
+| Properties       | Type        | Description                                                               |
+| ---------------- | ----------- | ------------------------------------------------------------------------- |
+| paginating_items | array <any> | Stores an array of items to paginate on a particular menu.                |
+| items_per_page   | integer     | The number of items to show per page. **Default: 5**                      |
+| back_key         | string      | A string holding the input value for navigating back. **Default: '0'**    |
+| next_key         | string      | A string holding the input value for navigating forward. **Default: '#'** |
+
+#### PaginateMenu Methods
+
+| Methods           | Description                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------ |
+| paginate          | Returns a list of paginated items based on the page the user is currently on.                    |
+| show_menu         | Takes a list of paginated items and a page title as a parameter and renders it out on the screen |
+| get_selected_item | Returns the selected item                                                                        |
+| has_selected?     | Returns true if the user has selected an item                                                    |
+
+**Example**
+
+```ruby
+ class Menus::Books < JoyUssdEngine::PaginateMenu
+
+        def before_render
+            # Implement before call backs
+
+            # set an array of items that are going to be paginated
+            @paginating_items = [
+                {title: "Data Structures", item: {id: 1}},
+                {title: "Excel Programming", item: {id: 2}},
+                {title: "Economics", item: {id: 3}},
+                {title: "Big Bang", item: {id: 4}},
+                {title: "Democracy Building", item: {id: 5}},
+                {title: "Python for Data Scientist", item: {id: 6}},
+                {title: "Money Mind", item: {id: 7}},
+                {title: "Design Patterns In C#", item: {id: 8}}
+            ]
+
+            # The paginate methods returns a list of paginated list for the current page when it is called 
+            paginated_list = paginate
+
+            # In a PaginateMenu the show_menu take a list a two optional named parameter values (title,key).
+
+            # The title shows the page title for the menu.
+
+            # The key stores the key of the hash which contains the text to be rendered on each list item. 
+
+            # If the key is not set the paginating_items is treated as a string and rendered to the user. 
+            # eg: @paginating_items = ["Data Structures","Excel Programming","Economics","Big Bang","Democracy Building","Python for Data Scientist","Money Mind","Design Patterns In C#"]
+
+            @menu_text = show_menu(paginated_list, title: 'My Books', key: 'title')
+            
+            # In other to select a paginating item we have to wrap the selection logic in an if has_selected? block to prevent some weird errors.
+            if has_selected?
+                # the get_selected_item is used to get the selected item from the paginating menu
+                selected_book = get_selected_item
+                
+                # We save the selected book so we can access later
+                @context.set_state(selected_book: selected_book)
+            end
+        end
+
+        def render
+            # Render ussd menu here
+
+            # The load_menu function points to a menu to load when a book is selected.
+            load_menu(Ussd::Menus::ShowBook)
+        end
+    end
+```
+
+To use a `PaginateMenu` we have to store the items to be paginated in the `paginating_items` variable. Then we call the `paginate` method and store the result in a variable. We can now pass the variable into the `show_menu` method and specify a `title` for the page if we have any. The `show_menu` method can also accept a `key` which is used to get the key containing the string to be rendered in a paginating_item. If the `key` is left blank the `paginating_items` are treated as strings and rendered automatically.
+
+In order to get item the user selected we have to wrap the selection login in an `if has_selected?` block to prevent some weird errors, then we can access the selected item with the `get_selected_item` method.
+
+The following screenshots shows the paginating menu when it's first rendered.
+
+![paginate_menu1](./images/paginate_menu1.png)
+
+When the user enters '#' we move to the next page in the list.
+
+![paginate_menu2](./images/paginate_menu2.png)
+
+### Saving and Accessing Data
+
+We can save and access data in any menu with the `context` object. The `context` object has two methods `set_state` and `get_state` which are used for saving and retrieving data. The saved data will be destroyed once the user session ends or is expired and it is advisable to persist this data into a permanent storage like a database if you will need it after the user session has ended.
+
+```ruby
+# Just call @context.set_state(key: value) to set a key with a particular value
+@context.set_state(selected_book: selected_book)
+
+# To access the values @context.get_state[:key]
+@context.get_state[:selected_book]
+```
+
+### Error Handling
+
+We can throw an error with a message and terminate the user session any where in our application by returning the `raise_error(error_message)` method and passing an error_message as an argument into the function.
+
+```ruby
+# We raise an error in our application
+return raise_error("Sorry something went wrong!")
+```
 
 ## Development
 
@@ -287,7 +406,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/joy_ussd_engine. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/joy_ussd_engine/blob/master/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/Caleb-Mantey/joy_ussd_engine. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/Caleb-Mantey/joy_ussd_engine/blob/master/CODE_OF_CONDUCT.md).
 
 ## License
 
@@ -295,4 +414,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the JoyUssdEngine project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/joy_ussd_engine/blob/master/CODE_OF_CONDUCT.md).
+Everyone interacting in the JoyUssdEngine project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/Caleb-Mantey/joy_ussd_engine/blob/master/CODE_OF_CONDUCT.md).
