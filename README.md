@@ -418,7 +418,7 @@ A `PaginateMenu` has the following properties in addition properties in [Menu](#
 
 To use a `PaginateMenu` we have to store the items to be paginated in the `paginating_items` variable. Then we call the `paginate` method and store the result in a variable. We can now pass the variable into the `show_menu` method and specify a `title` for the page if we have any. The `show_menu` method can also accept a `key` which is used to get the key containing the string to be rendered in a paginating_item. If the `key` is left blank the `paginating_items` are treated as strings and rendered automatically.
 
-In order to the get item the user selected we have to wrap the selection login in an `if has_selected?` block to prevent some weird errors, then we can access the selected item with the `get_selected_item` method.
+In order to get the item the user selected we have to wrap the selection login in an `if has_selected?` block to prevent some weird errors, then we can access the selected item with the `get_selected_item` method.
 
 The following screenshots shows the paginating menu when it's first rendered.
 
