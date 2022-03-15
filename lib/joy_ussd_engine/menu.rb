@@ -29,6 +29,7 @@ module JoyUssdEngine
         end
 
         def joy_release(error_message = "")
+            @context.reset_state
             { 
                 ClientState: "EndJoyUssdEngineiuewhjsdj",
                 data: @context.selected_provider.send("release", error_message.blank? ? @menu_text : error_message)
@@ -178,6 +179,23 @@ module JoyUssdEngine
             return unless allow_validation
            @previous_menu = @previous_client_state.constantize.new(@context)
            @previous_menu.on_validate
+        end
+
+        def run
+            save_field_value
+            do_validation
+            before_show_menu
+            before_render
+            return render_menu_error[:data] if @menu_error
+            if allow_validation
+                return render_previous if @previous_menu.field_error
+            end
+            response = render
+            response = response.blank? ? joy_response(@current_client_state) : response
+            after_render
+            save_state(response[:ClientState]) if response[:ClientState] != "EndJoyUssdEngineiuewhjsdj"
+            @context.reset_state if response[:ClientState] == "EndJoyUssdEngineiuewhjsdj" 
+            response
         end
 
         def execute

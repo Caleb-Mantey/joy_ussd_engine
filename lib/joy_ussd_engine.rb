@@ -4,12 +4,13 @@ require_relative "joy_ussd_engine/version"
 require 'joy_ussd_engine/menu'
 require 'joy_ussd_engine/paginate_menu'
 require 'joy_ussd_engine/data_transformer'
+require 'joy_ussd_engine/session_manager'
 
 
 module JoyUssdEngine
   class Error < StandardError; end
   class Core
-    # require JoyUssdEngine::SessionManager
+        include JoyUssdEngine::SessionManager
         
         attr_reader :params, :selected_provider
         attr_accessor :current_menu, :last_menu
@@ -34,45 +35,13 @@ module JoyUssdEngine
             menu_name.send("execute")
         end
 
+        def load_from_paginate_menu(name)
+          menu_name =  name.constantize.new(self) 
+          menu_name.send("run")
+        end
+
         def process
             load_menu(@current_menu)
         end
-
-        def expire_mins
-          @selected_provider.expiration.blank? ? 60.seconds : @selected_provider.expiration
-        end
-      
-        def user_mobile_number
-          @user_mobile_number ||= get_state[:"session_id"]
-        end
-      
-        # Retrive Session Data
-        def get_state
-          session_id = params["session_id"]
-          REDIS.with do |conn|
-            data = conn.get(session_id)
-            return {} if data.blank?
-            JSON.parse(data, symbolize_names: true)
-          end
-        end
-      
-        # Store USSD sessions in Redis with Expiry
-        def set_state(payload = {})
-          session_id = params["session_id"]
-          current_data = get_state
-          REDIS.with do |conn|
-            payload = current_data.merge(params.merge(payload))
-            conn.set(session_id, payload.to_json)
-            conn.expire(session_id, expire_mins)
-          end
-        end
-      
-        # Delete Session payload
-        def reset_state
-          session_id = params["session_id"]
-          REDIS.with do |conn|
-            conn.del(session_id)
-          end
-        end
-    end
+  end
 end

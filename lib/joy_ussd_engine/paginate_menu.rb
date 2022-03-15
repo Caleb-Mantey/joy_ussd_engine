@@ -75,7 +75,7 @@ module JoyUssdEngine
                 @context.set_state({"#{@field_name}_paginate_initiation".to_sym =>  nil})
                 set_previous_state 
                 @context.current_menu = @current_client_state = next_menu
-                @context.load_menu(next_menu) 
+                @context.load_from_paginate_menu(next_menu) 
             end
         end
 
@@ -172,13 +172,13 @@ module JoyUssdEngine
             @context.current_menu = @previous_menu.current_client_state = @previous_client_state
             @context.set_state({"#{@field_name}_paginate_initiation".to_sym =>  nil})
             @previous_menu.render_field_error
-         end
+        end
         
         def execute
             save_field_value
             do_validation
             before_render
-            return render_error[:data] if @paginating_error || @menu_error
+            return render_menu_error[:data] if @paginating_error || @menu_error
             if allow_validation
                 return render_previous if @previous_menu.field_error
             end

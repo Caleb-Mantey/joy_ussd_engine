@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Caleb Mantey"]
   spec.email         = ["manteycaleb@gmail.com"]
 
-  spec.summary       = "A gem for building ussd and text based applications."
-  spec.description   = "Write a longer description or delete this line."
+  spec.summary       = "A gem for building ussd and text based applications rapidly."
+  spec.description   = "A ruby library for building text based applications rapidly. It supports building whatsapp, ussd, telegram and various text or chat applications that communicate with your rails backend. With this library you can target multiple platforms(whatsapp, ussd, telegram, etc.) at once with just one codebase."
   spec.homepage      = "https://github.com/Caleb-Mantey/joy_ussd_engine"
   spec.license       = "MIT"
   spec.required_ruby_version = ">= 2.4.0"
