@@ -2,6 +2,38 @@
 
 A ruby library for building text based applications rapidly. It supports building whatsapp, ussd, telegram and various text or chat applications that communicate with your rails backend. With this library you can target multiple platforms(whatsapp, ussd, telegram, etc.) at once with just one codebase.
 
+## Table of Contents
+
+- [JoyUssdEngine](#joyussdengine)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Bootstrap the App](#bootstrap-the-app)
+    - [Generators](#generators)
+    - [DataTransformer](#datatransformer)
+      - [Methods](#methods)
+      - [Example](#example)
+    - [Menu](#menu)
+      - [Menu Properties](#menu-properties)
+      - [Lifecycle Methods](#lifecycle-methods)
+      - [Render Methods](#render-methods)
+      - [Other Methods](#other-methods)
+      - [Create a menu](#create-a-menu)
+      - [Execution Order of Lifecycle Methods](#execution-order-of-lifecycle-methods)
+      - [Execution Order Diagram](#execution-order-diagram)
+      - [Get Http Post Data](#get-http-post-data)
+      - [Saving and Accessing Data](#saving-and-accessing-data)
+      - [Error Handling](#error-handling)
+    - [Routing Menus](#routing-menus)
+    - [PaginateMenu](#paginatemenu)
+      - [PaginateMenu Properties](#paginatemenu-properties)
+      - [PaginateMenu Methods](#paginatemenu-methods)
+      - [PaginateMenu Example](#paginatemenu-example)
+  - [Development](#development)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [Code of Conduct](#code-of-conduct)
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -12,15 +44,16 @@ gem 'joy_ussd_engine'
 
 And then execute:
 
-    $ bundle install
+    bundle install
 
 Or install it yourself as:
 
-    $ gem install joy_ussd_engine
+    gem install joy_ussd_engine
 
 ## Usage
 
 The ussd engine handles user session and stores user data with redis. So in your `Gemfile` you will have to add the `redis` and the `redis-namespace` gem.
+
 ```ruby
 gem 'redis'
 gem 'redis-namespace'
@@ -29,7 +62,8 @@ gem 'redis-namespace'
 gem 'connection_pool', '~> 2.2', '>= 2.2.2'
 ```
 
-After installing redis you will need to setup the redis config in your rails application inside `config/initializers/redis.rb` 
+After installing redis you will need to setup the redis config in your rails application inside `config/initializers/redis.rb`
+
 ```ruby
 # With Connection Pool
 require 'connection_pool'
@@ -43,7 +77,7 @@ NAMESPACE = :DEFAULT_NAMESPACE
 REDIS = Redis::Namespace.new(NAMESPACE, :redis => Redis.new)
 ```
 
-### Starting the App
+### Bootstrap the App
 
 In your rails app inside a controller create a post route and initialize the `JoyUssdEngine` by calling `JoyUssdEngine::Core.new` and providing some parameters. [Click here](#params) to view all the required parameters list.
 
@@ -65,18 +99,27 @@ end
 
 The `JoyUssdEngine::Core.new` class takes the following parameters.<a id="params"></a>
 
-| Parameter                        | Type  | Description                                                                                                                           |
-| -------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| params                           | hash  | Params coming from a post end point in a rails controller                                                                             |
-| [data_transformer](#transformer) | class | A class to transform the incoming and outgoing request between a particular provider and `JoyUssdEngine`                              |
-| [start_point](#menu)             | class | Points to a menu that starts the application. This menu is the first menu that loads when the app starts                              |
-| [end_point](#menu)               | class | This menu will terminate the ussd session if a particular provider (`data_transformer`) returns true in  the `app_terminator` method. |
+| Parameter                        | Type  | Description                                                                                                                          |
+| -------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| params                           | hash  | Params coming from a post end point in a rails controller                                                                            |
+| [data_transformer](#transformer) | class | A class to transform the incoming and outgoing request between a particular provider and `JoyUssdEngine`                             |
+| [start_point](#menu)             | class | Points to a menu that starts the application. This menu is the first menu that loads when the app starts                             |
+| [end_point](#menu)               | class | This menu will terminate the ussd session if a particular provider (`data_transformer`) returns true in the `app_terminator` method. |
 
-### <a id="transformer">DataTransformer</a>
+### Generators
+
+The rails terminal is very powerful and we can utilize it to generate menus easily.
+
+- Generate a Menu - `rails g joy_menu <Menu_Name>`
+- Generate a PaginateMenu - `rails g joy_paginate_menu <Menu_Name>`
+- Generate a Routing Menu - `rails g joy_route_menu <Menu_Name>`
+- Generate a DataTransformer - `rails g joy_data_transformer <Transformer_Name>`
+
+### DataTransformer
 
 A data transformer transforms the incoming request and outgoing response between a particular provider and the `JoyUssdEngine` so they can effectively communicate between each other. The `JoyUssdEngine` can accept any request object but there are two required fields that needs to be present for it to work properly. The required fields are `session_id` and `message`. This is why the `DataTransformer` is needed to convert the request so it can provide this two required fields (`session_id`, `message`).
 
-- #### Methods
+#### Methods
 
 | Method         | Parameters                                 | Return Value  | Description                                                                                                                                                                                             |
 | -------------- | ------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -86,21 +129,14 @@ A data transformer transforms the incoming request and outgoing response between
 | app_terminator | params: [hash]()                           | [boolean]()   | Returns a true/false on whether to terminate the app when a particular condition is met based on the provider in use. `(eg of providers: Whatsapp, Twilio, Hubtel, Telegram, etc.)`                     |
 | expiration     | none                                       | [Date/Time]() | Sets the time for which to end the user's session if there is no response from the user. **Default value is 60 seconds**                                                                                |
 
-#### Generate a DataTransformer
+#### Example
 
-We can generate a `DataTransformer` from the terminal with the `rails g joy_data_transformer` command.
-
-```bash
-rails g joy_data_transformer <Transformer_Name>
-```
-
-**For Example:**
 When using `hubtel` we need to convert the `hubtel` request into what the `JoyUssdEngine` expects with the `request_params` method. Also we need to convert the response back from `JoyUssdEngine` to `hubtel` with the `response` and `release` methods. With this approach we can easily extend the `JoyUssdEngine` to target multiple providers like (Twilio, Telegram, etc) with ease. The `app_terminator` returns a boolean and terminates the app when a particular condition is met(For example: On whatsapp the user sends a message with text `end` to terminate the app)
 
 ```ruby
 class HubtelTransformer < JoyUssdEngine::DataTransformer
     # Transforms request payload between hubtel and our application
-    # The session_id and message fields are required so we get them from hubtel (session_id: params[:Mobile] and message: params[:Message]). 
+    # The session_id and message fields are required so we get them from hubtel (session_id: params[:Mobile] and message: params[:Message]).
     # And we pass in other hubtel specific params like (ClientState: params[:ClientState], Type: params[:Type])
     def request_params(params)
         {
@@ -111,7 +147,7 @@ class HubtelTransformer < JoyUssdEngine::DataTransformer
         }
     end
 
-    # We check if hubtel sends a params[:Type] == 'Release' and terminate the application 
+    # We check if hubtel sends a params[:Type] == 'Release' and terminate the application
     # OR
     # the hubtel params[:Type] is not a string with value "Initiation" and state data is blank (@context.get_state.blank?)
     def app_terminator(params)
@@ -145,21 +181,21 @@ class HubtelTransformer < JoyUssdEngine::DataTransformer
 end
 ```
 
-### Menu<a id="menu"></a>
+### Menu
 
-Menus are simply the views for our application. They contain the code for rendering the text and menus that display on the user's device. Also they contain the business logic for your app. 
+Menus are simply the views for our application. They contain the code for rendering the text and menus that display on the user's device. Also they contain the business logic for your app.
 
 #### Menu Properties
 
-| Properties  | Type                                           | Description                                                                                                                             |
-| ----------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| context     | object                                         | Provides methods for setting and getting state values                                                                                   |
-| field_name* | string                                         | The name for a particular input field. This name can be used to later retrieve the value the user entered in that field. (**Required**) |
-| menu_text*  | string                                         | The text to display to the user. (**Required**)                                                                                         |
-| error_text  | string                                         | If there is an error you will have to set the error message here. (**Optional**)                                                        |
-| skip_save   | boolean                                        | If set to true the user input will not be saved. **Default: false** (**Optional**)                                                      |
-| menu_items  | array <{title: '', menu: JoyUssdEngine::Menu}> | Stores an array of menu items.                                                                                                          |
-| field_error | boolean                                        | If set to true it will route back to the menu the error was caught in for the user to input the correct values.                         |
+| Properties   | Type                                           | Description                                                                                                                             |
+| ------------ | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| context      | object                                         | Provides methods for setting and getting state values                                                                                   |
+| field_name\* | string                                         | The name for a particular input field. This name can be used to later retrieve the value the user entered in that field. (**Required**) |
+| menu_text\*  | string                                         | The text to display to the user. (**Required**)                                                                                         |
+| error_text   | string                                         | If there is an error you will have to set the error message here. (**Optional**)                                                        |
+| skip_save    | boolean                                        | If set to true the user input will not be saved. **Default: false** (**Optional**)                                                      |
+| menu_items   | array <{title: '', menu: JoyUssdEngine::Menu}> | Stores an array of menu items.                                                                                                          |
+| field_error  | boolean                                        | If set to true it will route back to the menu the error was caught in for the user to input the correct values.                         |
 
 #### Lifecycle Methods
 
@@ -171,7 +207,7 @@ Menus are simply the views for our application. They contain the code for render
 | on_validate   | Validate user input here.                                                                                                                                |
 | on_error      | This method will be called when the `field_error` value is set to true. You can change the error message and render it to the user here.                 |
 
-#### Render Methods <a id="render_methods"></a>
+#### Render Methods
 
 | Methods      | Parameters | Description                                                                                                                                                     |
 | ------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -188,15 +224,7 @@ Menus are simply the views for our application. They contain the code for render
 | raise_error       | Takes an error message as an arguments and ends the user session       |
 | has_selected?     | Checks if the user has selected an item in from the `menu_items` array |
 
-#### Generate a Menu
-
-We can generate a `Menu` from the terminal with the `rails g joy_menu` command.
-
-```bash
-rails g joy_menu <Menu_Name>
-```
-
-#### Creating a menu<a id="error_handling"></a>
+#### Create a menu
 
 ```ruby
 class Menus::MainMenu < JoyUssdEngine::Menu
@@ -225,7 +253,7 @@ class Menus::MainMenu < JoyUssdEngine::Menu
         # this method will be executed if @field_error is set to true
 
         # catch errors and display the errors in the ussd menu by setting the @menu_text to include the error_message from @error_text
-        @menu_text = "#{@error_text}\n#{@menu_text}" 
+        @menu_text = "#{@error_text}\n#{@menu_text}"
     end
 
     def after_render
@@ -249,34 +277,40 @@ When the user enters a value which is not the string `"john doe"` an error will 
 
 ![Menu2](./images/menu_doc2.png)
 
-### Lifecycle Methods Execution Order
+#### Execution Order of Lifecycle Methods
 
 - before_render
-    ----------
-    This is the first method that gets executed. It is used for querying the db and handling the business logic of our application. This method also is used to set the text (`menu_text`) to be rendered and the input name (`field_name`) for the current menu.
+  ***
+  This is the first method that gets executed. It is used for querying the db and handling the business logic of our application. This method also is used to set the text (`menu_text`) to be rendered and the input name (`field_name`) for the current menu.
 - on_validate
-    ----------
-    This method will be executed when the user submits a response. We use this method to validate the user's input and set an error_message to display when there is an error. Normally we will set `field_error` value to true and store the error message in `error_text`. Then we can later access the error_message in the `on_error` lifecycle method and append the error to `menu_text` so it will be rendered out to the user.
+
+  ***
+
+  This method will be executed when the user submits a response. We use this method to validate the user's input and set an error_message to display when there is an error. Normally we will set `field_error` value to true and store the error message in `error_text`. Then we can later access the error_message in the `on_error` lifecycle method and append the error to `menu_text` so it will be rendered out to the user.
 
 - on_error
-    ----------
-    This is the next method that gets executed and it is used to set error messages. It will only be executed if the `field_error` value is set to true.
+
+  ***
+
+  This is the next method that gets executed and it is used to set error messages. It will only be executed if the `field_error` value is set to true.
 
 - render
-    ----------
-    This method is used for rendering out the menu by using the text stored in the `menu_text` variable. There are only three methods that should be used in the render method. Which are [joy_release](#render_methods), [joy_response](#render_methods), and [load_menu](render_methods).
+
+  ***
+
+  This method is used for rendering out the menu by using the text stored in the `menu_text` variable. There are only three methods that should be used in the render method. Which are [joy_release](#render_methods), [joy_response](#render_methods), and [load_menu](render_methods).
 
 - after_render
-    ----------
-    Use this method to do any other business logic after the menu has been rendered out and awaiting user response.
+  ***
+  Use this method to do any other business logic after the menu has been rendered out and awaiting user response.
+
+#### Execution Order Diagram
 
 The Diagram below shows how these methods are executed
 
 ![Lifecycle Diagram](images/lifecycle.jpg)
 
-### Get Http Post Data
-
-------
+#### Get Http Post Data
 
 We can access the post request data coming from the rails controller in any menu with the `context` object. The `context` object can be used to access data by reading values from the `params` hash of a post request. This hash consist of the `session_id`, `message` and any other additional data returned by the `request_params` method in the [DataTransformer](#transformer) class.
 
@@ -286,7 +320,7 @@ We can access the post request data coming from the rails controller in any menu
 @context.params[:message] # Gets the message the user enters from the post end point.
 ```
 
-### Saving and Accessing Data
+#### Saving and Accessing Data
 
 We can save and access data in any menu with the `context` object. The `context` object has two methods `set_state` and `get_state` which are used for saving and retrieving data. The saved data will be destroyed once the user session ends or is expired and it is advisable to persist this data into a permanent storage like a database if you will need it after the user session has ended.
 
@@ -312,7 +346,7 @@ Also by default any menu that has the `field_name` variable set. Will automatica
 @context.get_state[:user_email]
 ```
 
-### Error Handling
+#### Error Handling
 
 We can throw an error with a message and terminate the user session any where in our application by returning the `raise_error(error_message)` method and passing an error_message as an argument into the function.
 
@@ -327,20 +361,12 @@ Then in the `on_error` lifecycle method we can append the `error_text` variable 
 
 **Note:** The `on_error` method will only be invoke if the `field_error` variable is set to true.
 
-[View the example code on error handling here](#error_handling)
+[View the example code on error handling here](#create_menu)
 
-#### Routing Menus
+### Routing Menus
 
 You can show a list of menu items with their corresponding routes. When the user selects any item it will automatically route to the selected menu.
 When the user selects a menu that is not in the list an error is displayed to the user and the user session wil be terminated.
-
-#### Generate a Routing Menu
-
-We can generate a Routing `Menu` from the terminal with the `rails g joy_route_menu` command.
-
-```bash
-rails g joy_route_menu <Menu_Name>
-```
 
 ```ruby
 class Menus::InitialMenu < JoyUssdEngine::Menu
@@ -349,14 +375,14 @@ class Menus::InitialMenu < JoyUssdEngine::Menu
         # Implement before call backs
         @field_name='initiation'
         @skip_save = true
-        
+
         # Store a list of menu items with their routes
         @menu_items = [
-            {title: 'Make Payments', route: Menus::MakePayments}, 
+            {title: 'Make Payments', route: Menus::MakePayments},
             {title: 'View Transaction', route: Menus::ViewTransaction}
         ]
 
-        # Show menu items on screen with the show_menu method. 
+        # Show menu items on screen with the show_menu method.
         # The show_menu takes an optional parameter which is used to display the title of the page.
         @menu_text = show_menu('Welcome to JoyUssdEngine')
     end
@@ -375,14 +401,14 @@ This will be rendered out when this menu is executed
 
 ![MenuRoutes](./images/menu_items_routes.png)
 
-If the `Menus::ViewTransaction` has a structure like this. 
+If the `Menus::ViewTransaction` has a structure like this.
 
 ```ruby
 class Menus::ViewTransaction < JoyUssdEngine::Menu
 
     def before_render
         # Implement before call backs
-        
+
         @menu_text = "Transactions. \n1. ERN_CODE_SSD\n2. ERN_DESA_DAS\nThanks for using our services."
     end
 
@@ -424,15 +450,7 @@ A `PaginateMenu` has the following properties in addition properties in [Menu](#
 | get_selected_item | Returns the selected item                                                                        |
 | has_selected?     | Returns true if the user has selected an item                                                    |
 
-#### Generate a PaginateMenu
-
-We can generate a `PaginateMenu` from the terminal with the `rails g joy_paginate_menu` command.
-
-```bash
-rails g joy_paginate_menu <Menu_Name>
-```
-
-**Example**
+#### PaginateMenu Example
 
 ```ruby
  class Menus::Books < JoyUssdEngine::PaginateMenu
@@ -452,25 +470,25 @@ rails g joy_paginate_menu <Menu_Name>
                 {title: "Design Patterns In C#", item: {id: 8}}
             ]
 
-            # The paginate methods returns a list of paginated list for the current page when it is called 
+            # The paginate methods returns a list of paginated list for the current page when it is called
             paginated_list = paginate
 
             # In a PaginateMenu the show_menu take a list a two optional named parameter values (title,key).
 
             # The title shows the page title for the menu.
 
-            # The key stores the key of the hash which contains the text to be rendered on each list item. 
+            # The key stores the key of the hash which contains the text to be rendered on each list item.
 
-            # If the key is not set the paginating_items is treated as a string and rendered to the user. 
+            # If the key is not set the paginating_items is treated as a string and rendered to the user.
             # eg: @paginating_items = ["Data Structures","Excel Programming","Economics","Big Bang","Democracy Building","Python for Data Scientist","Money Mind","Design Patterns In C#"]
 
             @menu_text = show_menu(paginated_list, title: 'My Books', key: 'title')
-            
+
             # In other to select a paginating item we have to wrap the selection logic in an if has_selected? block to prevent some weird errors.
             if has_selected?
                 # the get_selected_item is used to get the selected item from the paginating menu
                 selected_book = get_selected_item
-                
+
                 # We save the selected book so we can access later
                 @context.set_state(selected_book: selected_book)
             end
@@ -530,7 +548,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/Caleb-Mantey/joy_ussd_engine. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/Caleb-Mantey/joy_ussd_engine/blob/master/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at <https://github.com/Caleb-Mantey/joy_ussd_engine>. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/Caleb-Mantey/joy_ussd_engine/blob/master/CODE_OF_CONDUCT.md).
 
 ## License
 
