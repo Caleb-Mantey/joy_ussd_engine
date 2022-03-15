@@ -68,6 +68,17 @@ module JoyUssdEngine
             text
         end
 
+        def load_menu(menu_to_load)
+            return render_menu_error[:data] if @menu_error
+            next_menu = menu_to_load.to_s
+            if has_selected?
+                @context.set_state({"#{@field_name}_paginate_initiation".to_sym =>  nil})
+                set_previous_state 
+                @context.current_menu = @current_client_state = next_menu
+                @context.load_menu(next_menu) 
+            end
+        end
+
         def has_selected?
             can_paginate? &&  ((@context.params[:message] != @next_key) && (@context.params[:message] != @back_key))
         end
@@ -156,13 +167,19 @@ module JoyUssdEngine
             # Paginating menus also terminates the session with a `joy_release` method to end the ussd_application
             # joy_release(@error_message - optional)
         end
+
+        def render_previous
+            @context.current_menu = @previous_menu.current_client_state = @previous_client_state
+            @context.set_state({"#{@field_name}_paginate_initiation".to_sym =>  nil})
+            @previous_menu.render_field_error
+         end
         
         def execute
             save_field_value
             do_validation
             before_render
             return render_error[:data] if @paginating_error || @menu_error
-            if !is_last_menu
+            if allow_validation
                 return render_previous if @previous_menu.field_error
             end
             response = render
