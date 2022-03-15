@@ -1,0 +1,28 @@
+class Ussd::Menus::<%= menu_name.camelcase %>Menu < JoyUssdEngine::Menu
+    def on_validate
+        # User input validation
+    end
+
+    def before_render
+        # Implement before call backs
+        @field_name="<%= menu_name.underscore %>"
+        @menu_text = "Welcome to the <%= menu_name.camelcase %> menu"
+    end
+
+    def on_error
+        # Render error 
+        # @menu_text = "#{@error_text}\n#{@menu_text }"
+    end
+
+    def after_render
+        # Implement after call backs
+    end
+
+    def render
+        # Render ussd menu and pass the next menu as an argument
+        # joy_response(Ussd::Menus::<%= menu_name.camelcase %>Menu)
+
+        # Render ussd menu and terminate the user session
+        # joy_release
+    end
+end

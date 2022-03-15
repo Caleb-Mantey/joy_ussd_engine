@@ -1,0 +1,8 @@
+Description:
+    This will create a new paginating ussd menu
+
+Example:
+    bin/rails generate joy_paginate_menu Paginate
+
+    This will create:
+         app/services/ussd/menus/paginate_menu.rb

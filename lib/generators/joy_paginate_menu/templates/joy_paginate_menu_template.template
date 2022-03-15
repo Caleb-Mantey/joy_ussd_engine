@@ -1,0 +1,48 @@
+class Ussd::Menus::<%= paginating_menu_name.camelcase %>Menu < JoyUssdEngine::PaginateMenu
+    def on_validate
+        # User input validation
+    end
+
+    def before_render
+        # Implement before call backs
+        @field_name="<%= paginating_menu_name.underscore %>"
+
+    # Store paginating items in @paginating_items array variable 
+    # @paginating_items = [
+    #   {title: "Data Structures", item: {id: 1}},
+    #   {title: "Excel Programming", item: {id: 2}},
+    #   {title: "Economics", item: {id: 3}},
+    #   {title: "Big Bang", item: {id: 4}},
+    #   {title: "Democracy Building", item: {id: 5}},
+    #   {title: "Python for Data Scientist", item: {id: 6}},
+    #   {title: "Money Mind", item: {id: 7}},
+    #   {title: "Design Patterns In C#", item: {id: 8}}
+    # ]
+
+    # Call the paginate method and store the return value in paginated_list 
+    # paginated_list = paginate
+
+    # Use the show menu method to get the paginated list items and return them as text and store in @menu_text
+    # @menu_text = show_menu(paginated_list, title: "Welcome to the <%= paginating_menu_name.camelcase %> menu", key: 'title')
+
+    # Get the selected item from the user with the `get_selected_item` method and save in state with @context.set_state
+    # if has_selected?
+    #   selected_book = get_selected_item
+    #   @context.set_state(selected_book: selected_book)
+    # end
+    end
+
+    def on_error
+        # Render error 
+        # @menu_text = "#{@error_text}\n#{@menu_text }"
+    end
+
+    def after_render
+        # Implement after call backs
+    end
+
+    def render
+        # Render paginating menu here or load the next menu after user has made a selection
+        # load_menu(Ussd::Menus::ShowBook)
+    end
+end

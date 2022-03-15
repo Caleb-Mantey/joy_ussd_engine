@@ -1,0 +1,36 @@
+class Ussd::Menus::<%= menu_name.camelcase %>Menu < JoyUssdEngine::Menu
+    def on_validate
+        # User input validation
+    end
+
+    def before_render
+        # Implement before call backs
+        # @field_name="<%= menu_name.underscore %>"
+
+        # title = "Welcome to the <%= menu_name.camelcase %> menu"
+
+        # Put menu routes in the @menu_items array
+        # @menu_items = [
+        #     {title: 'Make Payments', route: Ussd::Menus::SendMenu},
+        #     {title: 'View Transactions', route: Ussd::Menus::RequestMenu},
+        #     {title: 'Books', route: Ussd::Menus::Books}
+        # ]
+
+        # Render the menu out with show_menu and pass the title as a parameter to the `show_menu` method
+        # @menu_text = show_menu(title)
+    end
+
+    def on_error
+        # Render error 
+        # @menu_text = "#{@error_text}\n#{@menu_text }"
+    end
+
+    def after_render
+        # Implement after call backs
+    end
+
+    def render
+        # Render ussd menu and process to the selected menu when the user selects a menu.
+        # load_menu(get_selected_item)
+    end
+end

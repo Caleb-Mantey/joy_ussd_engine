@@ -1,0 +1,8 @@
+Description:
+    Will generate a DataTransformer class for transforming the incoming post request and outgoing response.
+
+Example:
+    bin/rails generate joy_data_transformer Hubtel
+
+    This will create:
+        app/services/ussd/transformers/hubtel_transformer.rb

@@ -1,0 +1,8 @@
+Description:
+    This will generate a new ussd menu.
+
+Example:
+    bin/rails generate joy_menu Transactions
+
+    This will create:
+        app/services/ussd/menus/transactions_menu.rb
