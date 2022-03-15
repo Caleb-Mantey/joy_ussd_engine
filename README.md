@@ -163,13 +163,13 @@ Menus are simply the views for our application. They contain the code for render
 | on_validate   | Validate user input here.                                                                                                                                |
 | on_error      | This method will be called when the `field_error` value is set to true. You can change the error message and render it to the user here.                 |
 
-#### Render Methods
+#### Render Methods <a id="render_methods"></a>
 
-| Methods      | Description                                                                                                                                                     |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| joy_response | This method takes a single argument (which is a class that points to the next menu) and is used to render out a menu to the user.                               |
-| joy_release  | This method renders a text to the user and ends the users session                                                                                               |
-| load_menu    | This method takes a single argument (which is a class that points to the next menu) and is used with the Routing and Paginating Menus to render out menu items. |
+| Methods      | Parameters | Description                                                                                                                                                     |
+| ------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| joy_response | Menu       | This method takes a single argument (which is a class that points to the next menu) and is used to render out a menu to the user.                               |
+| joy_release  | none       | This method renders a text to the user and ends the users session                                                                                               |
+| load_menu    | Menu       | This method takes a single argument (which is a class that points to the next menu) and is used with the Routing and Paginating Menus to render out menu items. |
 
 #### Other Methods
 
@@ -209,7 +209,7 @@ class Menus::MainMenu < JoyUssdEngine::Menu
         # this method will be executed if @field_error is set to true
 
         # catch errors and display the errors in the ussd menu by setting the @menu_text to include the error_message from @error_text
-        @menu_text = @field_error ? "#{@error_text}\n#{@menu_text}" : @menu_text
+        @menu_text = "#{@error_text}\n#{@menu_text}" 
     end
 
     def after_render
@@ -232,6 +232,43 @@ This will be rendered out to the user when this menu is executed for the first t
 When the user enters a value which is not the string `"john doe"` an error will be displayed like we see in the screenshot below.
 
 ![Menu2](./images/menu_doc2.png)
+
+### Lifecycle Methods Execution Order
+
+- before_render
+    ----------
+    This is the first method that gets executed. It is used for querying the db and handling the business logic of our application. This method also is used to set the text (`menu_text`) to be rendered and the input name (`field_name`) for the current menu.
+- on_validate
+    ----------
+    This method will be executed when the user submits a response. We use this method to validate the user's input and set an error_message to display when there is an error. Normally we will set `field_error` value to true and store the error message in `error_text`. Then we can later access the error_message in the `on_error` lifecycle method and append the error to `menu_text` so it will be rendered out to the user.
+
+- on_error
+    ----------
+    This is the next method that gets executed and it is used to set error messages. It will only be executed if the `field_error` value is set to true.
+
+- render
+    ----------
+    This method is used for rendering out the menu by using the text stored in the `menu_text` variable. There are only three methods that should be used in the render method. Which are [joy_release](#render_methods), [joy_response](#render_methods), and [load_menu](render_methods).
+
+- after_render
+    ----------
+    Use this method to do any other business logic after the menu has been rendered out and awaiting user response.
+
+The Diagram below shows how these methods are executed
+
+![Lifecycle Diagram](images/lifecycle.jpg)
+
+### Get Http Post Data
+
+------
+
+We can access the post request data coming from the rails controller in any menu with the `context` object. The `context` object can be used to access data by reading values from the `params` hash of a post request. This hash consist of the `session_id`, `message` and any other additional data returned by the `request_params` method in the [DataTransformer](#transformer) class.
+
+```ruby
+# Just call @context.params[key] to access a particular value coming from a post request made available to our app through the DataTransformer.request_params method.
+
+@context.params[:message] # Gets the message the user enters from the post end point.
+```
 
 ### Saving and Accessing Data
 
@@ -278,7 +315,7 @@ Then in the `on_error` lifecycle method we can append the `error_text` variable 
 
 #### Routing Menus
 
-You can show a list of menu items with their corresponding routes. When the user selects any menu it will automatically route to the selected menu.
+You can show a list of menu items with their corresponding routes. When the user selects any item it will automatically route to the selected menu.
 When the user selects a menu that is not in the list an error is displayed to the user and the user session wil be terminated.
 
 ```ruby
