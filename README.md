@@ -67,10 +67,10 @@ The `JoyUssdEngine::Core.new` class takes the following parameters.<a id="params
 
 | Parameter                        | Type  | Description                                                                                                                           |
 | -------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| params                           | hash  | Params from a post end point in a rails controller                                                                                    |
+| params                           | hash  | Params coming from a post end point in a rails controller                                                                             |
 | [data_transformer](#transformer) | class | A class to transform the incoming and outgoing request between a particular provider and `JoyUssdEngine`                              |
-| [start_point](#start_point)      | class | Points to a menu that starts the application. This menu is the first menu that loads when the app starts                              |
-| [end_point](#end_point)          | class | This menu will terminate the ussd session if a particular provider (`data_transformer`) returns true in  the `app_terminator` method. |
+| [start_point](#menu)             | class | Points to a menu that starts the application. This menu is the first menu that loads when the app starts                              |
+| [end_point](#menu)               | class | This menu will terminate the ussd session if a particular provider (`data_transformer`) returns true in  the `app_terminator` method. |
 
 ### <a id="transformer">DataTransformer</a>
 
@@ -92,7 +92,7 @@ When using `hubtel` we need to convert the `hubtel` request into what the `JoyUs
 ```ruby
 class HubtelTransformer < JoyUssdEngine::DataTransformer
     # Transforms request payload between hubtel and our application
-    # The session_id and message fields are requires so we get them from hubtel (session_id: params[:Mobile] and message: params[:Message]). 
+    # The session_id and message fields are required so we get them from hubtel (session_id: params[:Mobile] and message: params[:Message]). 
     # And we pass in other hubtel specific params like (ClientState: params[:ClientState], Type: params[:Type])
     def request_params(params)
         {
@@ -137,11 +137,11 @@ class HubtelTransformer < JoyUssdEngine::DataTransformer
 end
 ```
 
-### Menu
+### Menu<a id="menu"></a>
 
 Menus are simply the views for our application. They contain the code for rendering the text and menus that display on the user's device. Also they contain the business logic for your app. 
 
-#### Menu Properties<a id="menu"></a>
+#### Menu Properties
 
 | Properties  | Type                                           | Description                                                                                                                             |
 | ----------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -152,7 +152,6 @@ Menus are simply the views for our application. They contain the code for render
 | skip_save   | boolean                                        | If set to true the user input will not be saved. **Default: false** (**Optional**)                                                      |
 | menu_items  | array <{title: '', menu: JoyUssdEngine::Menu}> | Stores an array of menu items.                                                                                                          |
 | field_error | boolean                                        | If set to true it will route back to the menu the error was caught in for the user to input the correct values.                         |
-| menu_error  | boolean                                        | If set to true it will display an error in the current menu and end the user's session.                                                 |
 
 #### Lifecycle Methods
 
@@ -164,15 +163,24 @@ Menus are simply the views for our application. They contain the code for render
 | on_validate   | Validate user input here.                                                                                                                                |
 | on_error      | This method will be called when the `field_error` value is set to true. You can change the error message and render it to the user here.                 |
 
+#### Render Methods
+
+| Methods      | Description                                                                                                                                                     |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| joy_response | This method takes a single argument (which is a class that points to the next menu) and is used to render out a menu to the user.                               |
+| joy_release  | This method renders a text to the user and ends the users session                                                                                               |
+| load_menu    | This method takes a single argument (which is a class that points to the next menu) and is used with the Routing and Paginating Menus to render out menu items. |
+
 #### Other Methods
 
 | Methods           | Description                                                            |
 | ----------------- | ---------------------------------------------------------------------- |
 | show_menu         | Returns a list of menus stored in the `menu_items` variable            |
 | get_selected_item | Gets the selected menu from the `menu_items` array                     |
+| raise_error       | Takes an error message as an arguments and ends the user session       |
 | has_selected?     | Checks if the user has selected an item in from the `menu_items` array |
 
-#### Creating a menu
+#### Creating a menu<a id="error_handling"></a>
 
 ```ruby
 class Menus::MainMenu < JoyUssdEngine::Menu
@@ -225,7 +233,7 @@ When the user enters a value which is not the string `"john doe"` an error will 
 
 ![Menu2](./images/menu_doc2.png)
 
-#### Menu Routes
+#### Routing Menus
 
 You can show a list of menu items with their corresponding routes. When the user selects any menu it will automatically route to the selected menu.
 When the user selects a menu that is not in the list an error is displayed to the user and the user session wil be terminated.
@@ -286,6 +294,49 @@ When the user enters 2 in the `Menus::InitialMenu` menu then the following will 
 ![transaction](./images/transactions_menu.png)
 
 The `Menus::ViewTransaction` menu uses the `joy_release` method to render out the text stored in the `@menu_text` variable and ends the user session.
+
+### Saving and Accessing Data
+
+We can save and access data in any menu with the `context` object. The `context` object has two methods `set_state` and `get_state` which are used for saving and retrieving data. The saved data will be destroyed once the user session ends or is expired and it is advisable to persist this data into a permanent storage like a database if you will need it after the user session has ended.
+
+```ruby
+# Just call @context.set_state(key: value) to set a key with a particular value
+@context.set_state(selected_book: selected_book)
+
+# To access the values @context.get_state[:key]
+@context.get_state[:selected_book]
+```
+
+Also by default any menu that has the `field_name` variable set. Will automatically save the users input with a key matching the string stored in the `field_name` variable. 
+
+**Note:** However if the `skip_save` variable is set to true the user input will not be store for that particular menu. By default this value is false.
+
+```ruby
+# This stores the name of the input field for this menu
+@field_name = "user_email"
+
+# @skip_save = true -  user input will not be store
+
+# We can now get the user's input any where in our application with @context.get_state.
+@context.get_state[:user_email]
+```
+
+### Error Handling
+
+We can throw an error with a message and terminate the user session any where in our application by returning the `raise_error(error_message)` method and passing an error_message as an argument into the function.
+
+```ruby
+# We raise an error in our application
+return raise_error("Sorry something went wrong!")
+```
+
+There is also another way to handle errors without ending or terminating the user session. We can use the `on_validate` lifecycle method to validate user input and when there is an error we set the `field_error` variable to true and the `error_text` variable to include the error message.
+
+Then in the `on_error` lifecycle method we can append the `error_text` variable to the `menu_text` variable so it displays on the screen for the user.
+
+**Note:** The `on_error` method will only be invoke if the `field_error` variable is set to true.
+
+[View the Error Handling Example Here](#error_handling)
 
 ### PaginateMenu
 
@@ -360,14 +411,14 @@ A `PaginateMenu` has the following properties in addition properties in [Menu](#
             # Render ussd menu here
 
             # The load_menu function points to a menu to load when a book is selected.
-            load_menu(Ussd::Menus::ShowBook)
+            load_menu(Menus::ShowBook)
         end
     end
 ```
 
 To use a `PaginateMenu` we have to store the items to be paginated in the `paginating_items` variable. Then we call the `paginate` method and store the result in a variable. We can now pass the variable into the `show_menu` method and specify a `title` for the page if we have any. The `show_menu` method can also accept a `key` which is used to get the key containing the string to be rendered in a paginating_item. If the `key` is left blank the `paginating_items` are treated as strings and rendered automatically.
 
-In order to get item the user selected we have to wrap the selection login in an `if has_selected?` block to prevent some weird errors, then we can access the selected item with the `get_selected_item` method.
+In order to the get item the user selected we have to wrap the selection login in an `if has_selected?` block to prevent some weird errors, then we can access the selected item with the `get_selected_item` method.
 
 The following screenshots shows the paginating menu when it's first rendered.
 
@@ -377,26 +428,30 @@ When the user enters '#' we move to the next page in the list.
 
 ![paginate_menu2](./images/paginate_menu2.png)
 
-### Saving and Accessing Data
-
-We can save and access data in any menu with the `context` object. The `context` object has two methods `set_state` and `get_state` which are used for saving and retrieving data. The saved data will be destroyed once the user session ends or is expired and it is advisable to persist this data into a permanent storage like a database if you will need it after the user session has ended.
+In the next menu (`Menus::ShowBook`) we have code that looks like this.
 
 ```ruby
-# Just call @context.set_state(key: value) to set a key with a particular value
-@context.set_state(selected_book: selected_book)
+class Menus::ShowBook < Ussd::Menu
+    def before_render
+        # Implement before call backs
+        book = @context.get_state[:selected_book]
+        @menu_text = "The selected book is \nid: #{book[:item][:id]}\nname: #{book[:title]}"
+    end
 
-# To access the values @context.get_state[:key]
-@context.get_state[:selected_book]
+    def after_render
+        # Implement after call backs
+    end
+
+    def render
+        # Render ussd menu here
+        joy_release
+    end
+end
 ```
 
-### Error Handling
+When th user selects an item in the `PaginateMenu` we get the users selection with `@context.get_state[:selected_book]` and display the selected item back to the user and end the session.
 
-We can throw an error with a message and terminate the user session any where in our application by returning the `raise_error(error_message)` method and passing an error_message as an argument into the function.
-
-```ruby
-# We raise an error in our application
-return raise_error("Sorry something went wrong!")
-```
+![paginate_item_select](images/paginate_item_selected.png)
 
 ## Development
 
