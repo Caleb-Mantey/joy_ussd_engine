@@ -86,6 +86,14 @@ A data transformer transforms the incoming request and outgoing response between
 | app_terminator | params: [hash]()                           | [boolean]()   | Returns a true/false on whether to terminate the app when a particular condition is met based on the provider in use. `(eg of providers: Whatsapp, Twilio, Hubtel, Telegram, etc.)`                     |
 | expiration     | none                                       | [Date/Time]() | Sets the time for which to end the user's session if there is no response from the user. **Default value is 60 seconds**                                                                                |
 
+#### Generate a DataTransformer
+
+We can generate a `DataTransformer` from the terminal with the `rails g joy_data_transformer` command.
+
+```bash
+rails g joy_data_transformer <Transformer_Name>
+```
+
 **For Example:**
 When using `hubtel` we need to convert the `hubtel` request into what the `JoyUssdEngine` expects with the `request_params` method. Also we need to convert the response back from `JoyUssdEngine` to `hubtel` with the `response` and `release` methods. With this approach we can easily extend the `JoyUssdEngine` to target multiple providers like (Twilio, Telegram, etc) with ease. The `app_terminator` returns a boolean and terminates the app when a particular condition is met(For example: On whatsapp the user sends a message with text `end` to terminate the app)
 
@@ -179,6 +187,14 @@ Menus are simply the views for our application. They contain the code for render
 | get_selected_item | Gets the selected menu from the `menu_items` array                     |
 | raise_error       | Takes an error message as an arguments and ends the user session       |
 | has_selected?     | Checks if the user has selected an item in from the `menu_items` array |
+
+#### Generate a Menu
+
+We can generate a `Menu` from the terminal with the `rails g joy_menu` command.
+
+```bash
+rails g joy_menu <Menu_Name>
+```
 
 #### Creating a menu<a id="error_handling"></a>
 
@@ -290,7 +306,7 @@ Also by default any menu that has the `field_name` variable set. Will automatica
 # This stores the name of the input field for this menu
 @field_name = "user_email"
 
-# @skip_save = true -  user input will not be store
+# @skip_save = true -  user input will not be saved
 
 # We can now get the user's input any where in our application with @context.get_state.
 @context.get_state[:user_email]
@@ -317,6 +333,14 @@ Then in the `on_error` lifecycle method we can append the `error_text` variable 
 
 You can show a list of menu items with their corresponding routes. When the user selects any item it will automatically route to the selected menu.
 When the user selects a menu that is not in the list an error is displayed to the user and the user session wil be terminated.
+
+#### Generate a Routing Menu
+
+We can generate a Routing `Menu` from the terminal with the `rails g joy_route_menu` command.
+
+```bash
+rails g joy_route_menu <Menu_Name>
+```
 
 ```ruby
 class Menus::InitialMenu < JoyUssdEngine::Menu
@@ -399,6 +423,14 @@ A `PaginateMenu` has the following properties in addition properties in [Menu](#
 | show_menu         | Takes a list of paginated items and a page title as a parameter and renders it out on the screen |
 | get_selected_item | Returns the selected item                                                                        |
 | has_selected?     | Returns true if the user has selected an item                                                    |
+
+#### Generate a PaginateMenu
+
+We can generate a `PaginateMenu` from the terminal with the `rails g joy_paginate_menu` command.
+
+```bash
+rails g joy_paginate_menu <Menu_Name>
+```
 
 **Example**
 
