@@ -233,6 +233,49 @@ When the user enters a value which is not the string `"john doe"` an error will 
 
 ![Menu2](./images/menu_doc2.png)
 
+### Saving and Accessing Data
+
+We can save and access data in any menu with the `context` object. The `context` object has two methods `set_state` and `get_state` which are used for saving and retrieving data. The saved data will be destroyed once the user session ends or is expired and it is advisable to persist this data into a permanent storage like a database if you will need it after the user session has ended.
+
+```ruby
+# Just call @context.set_state(key: value) to set a key with a particular value
+@context.set_state(selected_book: selected_book)
+
+# To access the values @context.get_state[:key]
+@context.get_state[:selected_book]
+```
+
+Also by default any menu that has the `field_name` variable set. Will automatically save the users input with a key matching the string stored in the `field_name` variable.
+
+**Note:** However if the `skip_save` variable is set to true the user input will not be store for that particular menu. By default this value is false.
+
+```ruby
+# This stores the name of the input field for this menu
+@field_name = "user_email"
+
+# @skip_save = true -  user input will not be store
+
+# We can now get the user's input any where in our application with @context.get_state.
+@context.get_state[:user_email]
+```
+
+### Error Handling
+
+We can throw an error with a message and terminate the user session any where in our application by returning the `raise_error(error_message)` method and passing an error_message as an argument into the function.
+
+```ruby
+# We raise an error in our application
+return raise_error("Sorry something went wrong!")
+```
+
+There is also another way to handle errors without ending or terminating the user session. We can use the `on_validate` lifecycle method to validate user input and when there is an error we set the `field_error` variable to true and the `error_text` variable to include the error message.
+
+Then in the `on_error` lifecycle method we can append the `error_text` variable to the `menu_text` variable so it displays on the screen for the user.
+
+**Note:** The `on_error` method will only be invoke if the `field_error` variable is set to true.
+
+[View the example code on error handling here](#error_handling)
+
 #### Routing Menus
 
 You can show a list of menu items with their corresponding routes. When the user selects any menu it will automatically route to the selected menu.
@@ -294,49 +337,6 @@ When the user enters 2 in the `Menus::InitialMenu` menu then the following will 
 ![transaction](./images/transactions_menu.png)
 
 The `Menus::ViewTransaction` menu uses the `joy_release` method to render out the text stored in the `@menu_text` variable and ends the user session.
-
-### Saving and Accessing Data
-
-We can save and access data in any menu with the `context` object. The `context` object has two methods `set_state` and `get_state` which are used for saving and retrieving data. The saved data will be destroyed once the user session ends or is expired and it is advisable to persist this data into a permanent storage like a database if you will need it after the user session has ended.
-
-```ruby
-# Just call @context.set_state(key: value) to set a key with a particular value
-@context.set_state(selected_book: selected_book)
-
-# To access the values @context.get_state[:key]
-@context.get_state[:selected_book]
-```
-
-Also by default any menu that has the `field_name` variable set. Will automatically save the users input with a key matching the string stored in the `field_name` variable. 
-
-**Note:** However if the `skip_save` variable is set to true the user input will not be store for that particular menu. By default this value is false.
-
-```ruby
-# This stores the name of the input field for this menu
-@field_name = "user_email"
-
-# @skip_save = true -  user input will not be store
-
-# We can now get the user's input any where in our application with @context.get_state.
-@context.get_state[:user_email]
-```
-
-### Error Handling
-
-We can throw an error with a message and terminate the user session any where in our application by returning the `raise_error(error_message)` method and passing an error_message as an argument into the function.
-
-```ruby
-# We raise an error in our application
-return raise_error("Sorry something went wrong!")
-```
-
-There is also another way to handle errors without ending or terminating the user session. We can use the `on_validate` lifecycle method to validate user input and when there is an error we set the `field_error` variable to true and the `error_text` variable to include the error message.
-
-Then in the `on_error` lifecycle method we can append the `error_text` variable to the `menu_text` variable so it displays on the screen for the user.
-
-**Note:** The `on_error` method will only be invoke if the `field_error` variable is set to true.
-
-[View the Error Handling Example Here](#error_handling)
 
 ### PaginateMenu
 
