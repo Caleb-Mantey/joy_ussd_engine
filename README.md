@@ -99,12 +99,12 @@ end
 
 The `JoyUssdEngine::Core.new` class takes the following parameters.<a id="params"></a>
 
-| Parameter                        | Type  | Description                                                                                                                          |
-| -------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| params                           | hash  | Params coming from a post end point in a rails controller                                                                            |
-| [data_transformer](#transformer) | class | A class to transform the incoming and outgoing request between a particular provider and `JoyUssdEngine`                             |
-| [start_point](#menu)             | class | Points to a menu that starts the application. This menu is the first menu that loads when the app starts                             |
-| [end_point](#menu)               | class | This menu will terminate the ussd session if a particular provider (`data_transformer`) returns true in the `app_terminator` method. |
+| Parameter                            | Type  | Description                                                                                                                          |
+| ------------------------------------ | ----- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| params                               | hash  | Params coming from a post end point in a rails controller                                                                            |
+| [data_transformer](#datatransformer) | class | A class to transform the incoming and outgoing request between a particular provider and `JoyUssdEngine`                             |
+| [start_point](#menu)                 | class | Points to a menu that starts the application. This menu is the first menu that loads when the app starts                             |
+| [end_point](#menu)                   | class | This menu will terminate the ussd session if a particular provider (`data_transformer`) returns true in the `app_terminator` method. |
 
 ### Generators
 
@@ -117,7 +117,7 @@ The rails terminal is very powerful and we can utilize it to generate menus easi
 
 ### DataTransformer
 
-A data transformer transforms the incoming request and outgoing response between a particular provider and the `JoyUssdEngine` so they can effectively communicate between each other. The `JoyUssdEngine` can accept any request object but there are two required fields that needs to be present for it to work properly. The required fields are `session_id` and `message`. This is why the `DataTransformer` is needed to convert the request so it can provide this two required fields (`session_id`, `message`).
+A data transformer transforms the incoming request and outgoing response between a particular provider and the `JoyUssdEngine` so they can effectively communicate with each other. The `JoyUssdEngine` can accept any request object but there are two required fields that needs to be present for it to work properly. The required fields are `session_id` and `message`. This is why the `DataTransformer` is needed to convert the request so it can provide this two required fields (`session_id`, `message`).
 
 #### Methods
 
@@ -183,19 +183,19 @@ end
 
 ### Menu
 
-Menus are simply the views for our application. They contain the code for rendering the text and menus that display on the user's device. Also they contain the business logic for your app.
+Menus are simply the views for our application. They contain the code for rendering the text that display on the user's device. Also they contain the business logic for your app.
 
 #### Menu Properties
 
-| Properties   | Type                                           | Description                                                                                                                             |
-| ------------ | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| context      | object                                         | Provides methods for setting and getting state values                                                                                   |
-| field_name\* | string                                         | The name for a particular input field. This name can be used to later retrieve the value the user entered in that field. (**Required**) |
-| menu_text\*  | string                                         | The text to display to the user. (**Required**)                                                                                         |
-| error_text   | string                                         | If there is an error you will have to set the error message here. (**Optional**)                                                        |
-| skip_save    | boolean                                        | If set to true the user input will not be saved. **Default: false** (**Optional**)                                                      |
-| menu_items   | array <{title: '', menu: JoyUssdEngine::Menu}> | Stores an array of menu items.                                                                                                          |
-| field_error  | boolean                                        | If set to true it will route back to the menu the error was caught in for the user to input the correct values.                         |
+| Properties   | Type                                            | Description                                                                                                                             |
+| ------------ | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| context      | object                                          | Provides methods for setting and getting state values                                                                                   |
+| field_name\* | string                                          | The name for a particular input field. This name can be used to later retrieve the value the user entered in that field. (**Required**) |
+| menu_text\*  | string                                          | The text to display to the user. (**Required**)                                                                                         |
+| error_text   | string                                          | If there is an error you will have to set the error message here. (**Optional**)                                                        |
+| skip_save    | boolean                                         | If set to true the user input will not be saved. **Default: false** (**Optional**)                                                      |
+| menu_items   | array <{title: '', route: JoyUssdEngine::Menu}> | Stores an array of menu items with their corresponding routes.                                                                          |
+| field_error  | boolean                                         | If set to true it will route back to the menu the error was caught in for the user to input the correct values.                         |
 
 #### Lifecycle Methods
 
@@ -209,20 +209,20 @@ Menus are simply the views for our application. They contain the code for render
 
 #### Render Methods
 
-| Methods      | Parameters | Description                                                                                                                                                     |
-| ------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| joy_response | Menu       | This method takes a single argument (which is a class that points to the next menu) and is used to render out a menu to the user.                               |
-| joy_release  | none       | This method renders a text to the user and ends the users session                                                                                               |
-| load_menu    | Menu       | This method takes a single argument (which is a class that points to the next menu) and is used with the Routing and Paginating Menus to render out menu items. |
+| Methods      | Parameters | Description                                                                                                                                                                                        |
+| ------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| joy_response | Menu       | This method takes a single argument (which is a class that points to the next menu) and is used to render out a menu to the user.                                                                  |
+| joy_release  | none       | This method renders a text to the user and ends the users session                                                                                                                                  |
+| load_menu    | Menu       | This method takes a single argument (which is a class that points to the next menu) and is used with the [Routing](#routing-menus) and [Paginating](#paginatemenu) Menus to render out menu items. |
 
 #### Other Methods
 
-| Methods           | Description                                                            |
-| ----------------- | ---------------------------------------------------------------------- |
-| show_menu         | Returns a list of menus stored in the `menu_items` variable            |
-| get_selected_item | Gets the selected menu from the `menu_items` array                     |
-| raise_error       | Takes an error message as an arguments and ends the user session       |
-| has_selected?     | Checks if the user has selected an item in from the `menu_items` array |
+| Methods           | Description                                                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| show_menu         | Returns the menu text to be rendered out. This method is used with only [Routing](#routing-menus) and [Paginating](#paginatemenu) Menus |
+| get_selected_item | Gets the users selection from the `menu_items` array                                                                                    |
+| raise_error       | Takes an error message as an arguments and renders the message to the user before ending the user's session                             |
+| has_selected?     | Checks if the user has selected an item from the `menu_items` array                                                                     |
 
 #### Create a menu
 
@@ -298,7 +298,7 @@ When the user enters a value which is not the string `"john doe"` an error will 
 
   ***
 
-  This method is used for rendering out the menu by using the text stored in the `menu_text` variable. There are only three methods that should be used in the render method. Which are [joy_release](#render_methods), [joy_response](#render_methods), and [load_menu](render_methods).
+  This method is used for rendering out the menu by using the text stored in the `menu_text` variable. There are only three methods that should be used in the render method. Which are [joy_release](#render-methods), [joy_response](#render-methods), and [load_menu](render-methods).
 
 - after_render
   ***
@@ -312,7 +312,7 @@ The Diagram below shows how these methods are executed
 
 #### Get Http Post Data
 
-We can access the post request data coming from the rails controller in any menu with the `context` object. The `context` object can be used to access data by reading values from the `params` hash of a post request. This hash consist of the `session_id`, `message` and any other additional data returned by the `request_params` method in the [DataTransformer](#transformer) class.
+We can access the post request data coming from the rails controller in any menu with the `context` object. The `context` object can be used to access post data by reading values from the `params` hash of a post request. This hash consist of the `session_id`, `message` and any other additional data returned by the `request_params` method in the [DataTransformer](#datatransformer) class.
 
 ```ruby
 # Just call @context.params[key] to access a particular value coming from a post request made available to our app through the DataTransformer.request_params method.
@@ -390,8 +390,8 @@ class Menus::InitialMenu < JoyUssdEngine::Menu
     def render
         # Render ussd menu here
 
-        # Use this to load the menu the user selects
-        # get_selected_item automatically listens to user inputs and passes the selected menu into load_menu method
+        # Use the `load_menu` method to load the menus on screen
+        # The `get_selected_item` method automatically listens to user inputs and passes the selected menu into the `load_menu` method
         load_menu(get_selected_item)
     end
 end
@@ -470,23 +470,24 @@ A `PaginateMenu` has the following properties in addition properties in [Menu](#
                 {title: "Design Patterns In C#", item: {id: 8}}
             ]
 
-            # The paginate methods returns a list of paginated list for the current page when it is called
+            # The `paginate` method returns a list of paginated items for the current page when it is called
             paginated_list = paginate
 
-            # In a PaginateMenu the show_menu take a list a two optional named parameter values (title,key).
+            # In a PaginateMenu the `show_menu` method takes a list and two optional named parameter values (title,key).
 
             # The title shows the page title for the menu.
 
-            # The key stores the key of the hash which contains the text to be rendered on each list item.
+            # The key stores the key of the hash which contains the text to be rendered for each list item.
 
             # If the key is not set the paginating_items is treated as a string and rendered to the user.
+
             # eg: @paginating_items = ["Data Structures","Excel Programming","Economics","Big Bang","Democracy Building","Python for Data Scientist","Money Mind","Design Patterns In C#"]
 
             @menu_text = show_menu(paginated_list, title: 'My Books', key: 'title')
 
             # In other to select a paginating item we have to wrap the selection logic in an if has_selected? block to prevent some weird errors.
             if has_selected?
-                # the get_selected_item is used to get the selected item from the paginating menu
+                # the get_selected_item is used to get the selected item from the paginating list
                 selected_book = get_selected_item
 
                 # We save the selected book so we can access later
@@ -503,9 +504,9 @@ A `PaginateMenu` has the following properties in addition properties in [Menu](#
     end
 ```
 
-To use a `PaginateMenu` we have to store the items to be paginated in the `paginating_items` variable. Then we call the `paginate` method and store the result in a variable. We can now pass the variable into the `show_menu` method and specify a `title` for the page if we have any. The `show_menu` method can also accept a `key` which is used to get the key containing the string to be rendered in a paginating_item. If the `key` is left blank the `paginating_items` are treated as strings and rendered automatically.
+To use a `PaginateMenu` we have to store the items to be paginated in the `paginating_items` variable. Then we call the `paginate` method and store the result in a variable (`paginated_list`). We can now pass the variable (`paginated_list`) into the `show_menu` method and specify a `title` for the page if we have any. The `show_menu` method can also accept a `key` which is used to get the key containing the string to be rendered in a paginating_item. If the `key` is left blank the `paginating_items` are treated as strings and rendered automatically.
 
-In order to get the item the user selected we have to wrap the selection login in an `if has_selected?` block to prevent some weird errors, then we can access the selected item with the `get_selected_item` method.
+In order to get the item the user has selected we have to wrap the selection login in an `if has_selected?` block to prevent some weird errors, then we can access the selected item with the `get_selected_item` method.
 
 The following screenshots shows the paginating menu when it's first rendered.
 
