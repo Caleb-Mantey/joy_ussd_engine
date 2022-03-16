@@ -187,15 +187,15 @@ Menus are simply the views for our application. They contain the code for render
 
 #### Menu Properties
 
-| Properties   | Type                                            | Description                                                                                                                             |
-| ------------ | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| context      | object                                          | Provides methods for setting and getting state values                                                                                   |
-| field_name\* | string                                          | The name for a particular input field. This name can be used to later retrieve the value the user entered in that field. (**Required**) |
-| menu_text\*  | string                                          | The text to display to the user. (**Required**)                                                                                         |
-| error_text   | string                                          | If there is an error you will have to set the error message here. (**Optional**)                                                        |
-| skip_save    | boolean                                         | If set to true the user input will not be saved. **Default: false** (**Optional**)                                                      |
-| menu_items   | array <{title: '', route: JoyUssdEngine::Menu}> | Stores an array of menu items with their corresponding routes.                                                                          |
-| field_error  | boolean                                         | If set to true it will route back to the menu the error was caught in for the user to input the correct values.                         |
+| Properties    | Type                                            | Description                                                                                                                             |
+| ------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| @context      | object                                          | Provides methods for setting and getting state values                                                                                   |
+| @field_name\* | string                                          | The name for a particular input field. This name can be used to later retrieve the value the user entered in that field. (**Required**) |
+| @menu_text\*  | string                                          | The text to display to the user. (**Required**)                                                                                         |
+| @error_text   | string                                          | If there is an error you will have to set the error message here. (**Optional**)                                                        |
+| @skip_save    | boolean                                         | If set to true the user input will not be saved. **Default: false** (**Optional**)                                                      |
+| @menu_items   | array <{title: '', route: JoyUssdEngine::Menu}> | Stores an array of menu items with their corresponding routes.                                                                          |
+| @field_error  | boolean                                         | If set to true it will route back to the menu the error was caught in for the user to input the correct values.                         |
 
 #### Lifecycle Methods
 
@@ -211,8 +211,8 @@ Menus are simply the views for our application. They contain the code for render
 
 | Methods      | Parameters | Description                                                                                                                                                                                        |
 | ------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| joy_response | Menu       | This method takes a single argument (which is a class that points to the next menu) and is used to render out a menu to the user.                                                                  |
-| joy_release  | none       | This method renders a text to the user and ends the users session                                                                                                                                  |
+| joy_response | Menu       | This method takes a single argument (which is a class that points to the next menu) and is used to render out the text stored in the `@menu_text` variable to the user.                            |
+| joy_release  | none       | This method renders the text in the `@menu_text` variable to the user and ends the users session                                                                                                   |
 | load_menu    | Menu       | This method takes a single argument (which is a class that points to the next menu) and is used with the [Routing](#routing-menus) and [Paginating](#paginatemenu) Menus to render out menu items. |
 
 #### Other Methods
@@ -220,9 +220,9 @@ Menus are simply the views for our application. They contain the code for render
 | Methods           | Description                                                                                                                             |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | show_menu         | Returns the menu text to be rendered out. This method is used with only [Routing](#routing-menus) and [Paginating](#paginatemenu) Menus |
-| get_selected_item | Gets the users selection from the `menu_items` array                                                                                    |
+| get_selected_item | Gets the users selection from the `@menu_items` array                                                                                   |
 | raise_error       | Takes an error message as an arguments and renders the message to the user before ending the user's session                             |
-| has_selected?     | Checks if the user has selected an item from the `menu_items` array                                                                     |
+| has_selected?     | Checks if the user has selected an item from the `@menu_items` array                                                                    |
 
 #### Create a menu
 
@@ -281,24 +281,24 @@ When the user enters a value which is not the string `"john doe"` an error will 
 
 - before_render
   ***
-  This is the first method that gets executed. It is used for querying the db and handling the business logic of our application. This method also is used to set the text (`menu_text`) to be rendered and the input name (`field_name`) for the current menu.
+  This is the first method that gets executed. It is used for querying the db and handling the business logic of our application. This method also is used to set the text (`@menu_text`) to be rendered and the input name (`@field_name`) for the current menu.
 - on_validate
 
   ***
 
-  This method will be executed when the user submits a response. We use this method to validate the user's input and set an error_message to display when there is an error. Normally we will set `field_error` value to true and store the error message in `error_text`. Then we can later access the error_message in the `on_error` lifecycle method and append the error to `menu_text` so it will be rendered out to the user.
+  This method will be executed when the user submits a response. We use this method to validate the user's input and set an error_message to display when there is an error. Normally we will set `@field_error` value to true and store the error message in `@error_text`. Then we can later access the error_message in the `on_error` lifecycle method and append the error message to `@menu_text` so it will be rendered out to the user.
 
 - on_error
 
   ***
 
-  This is the next method that gets executed and it is used to set error messages. It will only be executed if the `field_error` value is set to true.
+  This is the next method that gets executed and it is used to set error messages. It will only be executed if the `@field_error` value is set to true.
 
 - render
 
   ***
 
-  This method is used for rendering out the menu by using the text stored in the `menu_text` variable. There are only three methods that should be used in the render method. Which are [joy_release](#render-methods), [joy_response](#render-methods), and [load_menu](render-methods).
+  This method is used for rendering out the menu by using the text stored in the `@menu_text` variable. There are only three methods that should be used in the render method. Which are [joy_release](#render-methods), [joy_response](#render-methods), and [load_menu](render-methods).
 
 - after_render
   ***
@@ -312,7 +312,7 @@ The Diagram below shows how these methods are executed
 
 #### Get Http Post Data
 
-We can access the post request data coming from the rails controller in any menu with the `context` object. The `context` object can be used to access post data by reading values from the `params` hash of a post request. This hash consist of the `session_id`, `message` and any other additional data returned by the `request_params` method in the [DataTransformer](#datatransformer) class.
+We can access the post request data coming from the rails controller in any menu with the `@context` object. The `@context` object can be used to access post data by reading values from the `params` hash of a post request. This hash consist of the `session_id`, `message` and any other additional data returned by the `request_params` method in the [DataTransformer](#datatransformer) class.
 
 ```ruby
 # Just call @context.params[key] to access a particular value coming from a post request made available to our app through the DataTransformer.request_params method.
@@ -322,7 +322,7 @@ We can access the post request data coming from the rails controller in any menu
 
 #### Saving and Accessing Data
 
-We can save and access data in any menu with the `context` object. The `context` object has two methods `set_state` and `get_state` which are used for saving and retrieving data. The saved data will be destroyed once the user session ends or is expired and it is advisable to persist this data into a permanent storage like a database if you will need it after the user session has ended.
+We can save and access data in any menu with the `@context` object. The `@context` object has two methods `set_state` and `get_state` which are used for saving and retrieving data. The saved data will be destroyed once the user session ends or is expired and it is advisable to persist this data into a permanent storage like a database if you will need it after the user session has ended.
 
 ```ruby
 # Just call @context.set_state(key: value) to set a key with a particular value
@@ -332,9 +332,9 @@ We can save and access data in any menu with the `context` object. The `context`
 @context.get_state[:selected_book]
 ```
 
-Also by default any menu that has the `field_name` variable set. Will automatically save the users input with a key matching the string stored in the `field_name` variable.
+Also by default any menu that has the `@field_name` variable set. Will automatically save the users input with a key matching the string stored in the `@field_name` variable.
 
-**Note:** However if the `skip_save` variable is set to true the user input will not be store for that particular menu. By default this value is false.
+**Note:** However if the `@skip_save` variable is set to true the user input will not be store for that particular menu. By default this value is false.
 
 ```ruby
 # This stores the name of the input field for this menu
@@ -355,11 +355,11 @@ We can throw an error with a message and terminate the user session any where in
 return raise_error("Sorry something went wrong!")
 ```
 
-There is also another way to handle errors without ending or terminating the user session. We can use the `on_validate` lifecycle method to validate user input and when there is an error we set the `field_error` variable to true and the `error_text` variable to include the error message.
+There is also another way to handle errors without ending or terminating the user session. We can use the `on_validate` lifecycle method to validate user input and when there is an error we set the `@field_error` variable to true and the `@error_text` variable to include the error message.
 
-Then in the `on_error` lifecycle method we can append the `error_text` variable to the `menu_text` variable so it displays on the screen for the user.
+Then in the `on_error` lifecycle method we can append the `@error_text` variable to the `@menu_text` variable so it displays the error when render an output to the user.
 
-**Note:** The `on_error` method will only be invoke if the `field_error` variable is set to true.
+**Note:** The `on_error` method will only be invoke if the `@field_error` variable is set to true.
 
 [View the example code on error handling here](#create_menu)
 
@@ -434,12 +434,12 @@ A `PaginateMenu` has all the properties and methods in a `Menu` in addition to t
 
 A `PaginateMenu` has the following properties in addition properties in [Menu](#menu).
 
-| Properties       | Type        | Description                                                               |
-| ---------------- | ----------- | ------------------------------------------------------------------------- |
-| paginating_items | array <any> | Stores an array of items to paginate on a particular menu.                |
-| items_per_page   | integer     | The number of items to show per page. **Default: 5**                      |
-| back_key         | string      | A string holding the input value for navigating back. **Default: '0'**    |
-| next_key         | string      | A string holding the input value for navigating forward. **Default: '#'** |
+| Properties        | Type        | Description                                                               |
+| ----------------- | ----------- | ------------------------------------------------------------------------- |
+| @paginating_items | array <any> | Stores an array of items to paginate on a particular menu.                |
+| @items_per_page   | integer     | The number of items to show per page. **Default: 5**                      |
+| @back_key         | string      | A string holding the input value for navigating back. **Default: '0'**    |
+| @next_key         | string      | A string holding the input value for navigating forward. **Default: '#'** |
 
 #### PaginateMenu Methods
 
@@ -504,7 +504,7 @@ A `PaginateMenu` has the following properties in addition properties in [Menu](#
     end
 ```
 
-To use a `PaginateMenu` we have to store the items to be paginated in the `paginating_items` variable. Then we call the `paginate` method and store the result in a variable (`paginated_list`). We can now pass the variable (`paginated_list`) into the `show_menu` method and specify a `title` for the page if we have any. The `show_menu` method can also accept a `key` which is used to get the key containing the string to be rendered in a paginating_item. If the `key` is left blank the `paginating_items` are treated as strings and rendered automatically.
+To use a `PaginateMenu` we have to store the items to be paginated in the `@paginating_items` variable. Then we call the `paginate` method and store the result in a variable (`paginated_list`). We can now pass the variable (`paginated_list`) into the `show_menu` method and specify a `title` for the page if we have any. The `show_menu` method can also accept a `key` which is used to get the key containing the string to be rendered in a paginating_item. If the `key` is left blank the `@paginating_items` are treated as strings and rendered automatically.
 
 In order to get the item the user has selected we have to wrap the selection login in an `if has_selected?` block to prevent some weird errors, then we can access the selected item with the `get_selected_item` method.
 
