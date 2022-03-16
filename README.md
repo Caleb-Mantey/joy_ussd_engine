@@ -280,13 +280,10 @@ When the user enters a value which is not the string `"john doe"` an error will 
 #### Execution Order of Lifecycle Methods
 
 - before_render
+
   ***
+
   This is the first method that gets executed. It is used for querying the db and handling the business logic of our application. This method also is used to set the text (`@menu_text`) to be rendered and the input name (`@field_name`) for the current menu.
-- on_validate
-
-  ***
-
-  This method will be executed when the user submits a response. We use this method to validate the user's input and set an error_message to display when there is an error. Normally we will set `@field_error` value to true and store the error message in `@error_text`. Then we can later access the error_message in the `on_error` lifecycle method and append the error message to `@menu_text` so it will be rendered out to the user.
 
 - on_error
 
@@ -301,8 +298,16 @@ When the user enters a value which is not the string `"john doe"` an error will 
   This method is used for rendering out the menu by using the text stored in the `@menu_text` variable. There are only three methods that should be used in the render method. Which are [joy_release](#render-methods), [joy_response](#render-methods), and [load_menu](render-methods).
 
 - after_render
+
   ***
+
   Use this method to do any other business logic after the menu has been rendered out and awaiting user response.
+
+- on_validate
+
+  ***
+
+  This method will be executed when the user submits a response. We use this method to validate the user's input and set an error_message to display when there is an error. Normally we will set `@field_error` value to true and store the error message in `@error_text`. Then we can later access the error_message in the `on_error` lifecycle method and append the error message to `@menu_text` so it will be rendered out to the user.
 
 #### Execution Order Diagram
 
