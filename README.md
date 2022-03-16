@@ -86,7 +86,7 @@ class MyController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def create
-    joy_ussd_engine = JoyUssdEngine::Core.new(ussd_params, Transformers::HubtelTransformer, start_point: Ussd::Menus::StartMenu, end_point: Ussd::Menus::EndMenu)
+    joy_ussd_engine = JoyUssdEngine::Core.new(ussd_params, Ussd::Transformers::HubtelTransformer, start_point: Ussd::Menus::StartMenu, end_point: Ussd::Menus::EndMenu)
     response = joy_ussd_engine.process
     render json: response, status: :created
   end
@@ -134,7 +134,7 @@ A data transformer transforms the incoming request and outgoing response between
 When using `hubtel` we need to convert the `hubtel` request into what the `JoyUssdEngine` expects with the `request_params` method. Also we need to convert the response back from `JoyUssdEngine` to `hubtel` with the `response` and `release` methods. With this approach we can easily extend the `JoyUssdEngine` to target multiple providers like (Twilio, Telegram, etc) with ease. The `app_terminator` returns a boolean and terminates the app when a particular condition is met(For example: On whatsapp the user sends a message with text `end` to terminate the app)
 
 ```ruby
-class HubtelTransformer < JoyUssdEngine::DataTransformer
+class Ussd::Transformers::HubtelTransformer < JoyUssdEngine::DataTransformer
     # Transforms request payload between hubtel and our application
     # The session_id and message fields are required so we get them from hubtel (session_id: params[:Mobile] and message: params[:Message]).
     # And we pass in other hubtel specific params like (ClientState: params[:ClientState], Type: params[:Type])
@@ -227,7 +227,7 @@ Menus are simply the views for our application. They contain the code for render
 #### Create a menu
 
 ```ruby
-class Menus::MainMenu < JoyUssdEngine::Menu
+class Ussd::Menus::MainMenu < JoyUssdEngine::Menu
     def on_validate
         # use this method to validate the user's input
 
@@ -264,7 +264,7 @@ class Menus::MainMenu < JoyUssdEngine::Menu
         # Render ussd menu here
 
         # the joy_response renders out the ussd menu and takes the class of the next menu to route to as an argument.
-        joy_response(Menus::NextMenu)
+        joy_response(Ussd::Menus::NextMenu)
     end
 end
 ```
@@ -369,7 +369,7 @@ You can show a list of menu items with their corresponding routes. When the user
 When the user selects a menu that is not in the list an error is displayed to the user and the user session wil be terminated.
 
 ```ruby
-class Menus::InitialMenu < JoyUssdEngine::Menu
+class Ussd::Menus::InitialMenu < JoyUssdEngine::Menu
 
     def before_render
         # Implement before call backs
@@ -378,8 +378,8 @@ class Menus::InitialMenu < JoyUssdEngine::Menu
 
         # Store a list of menu items with their routes
         @menu_items = [
-            {title: 'Make Payments', route: Menus::MakePayments},
-            {title: 'View Transaction', route: Menus::ViewTransaction}
+            {title: 'Make Payments', route: Ussd::Menus::MakePayments},
+            {title: 'View Transaction', route: Ussd::Menus::ViewTransaction}
         ]
 
         # Show menu items on screen with the show_menu method.
@@ -401,10 +401,10 @@ This will be rendered out when this menu is executed
 
 ![MenuRoutes](./images/menu_items_routes.png)
 
-If the `Menus::ViewTransaction` has a structure like this.
+If the `Ussd::Menus::ViewTransaction` has a structure like this.
 
 ```ruby
-class Menus::ViewTransaction < JoyUssdEngine::Menu
+class Ussd::Menus::ViewTransaction < JoyUssdEngine::Menu
 
     def before_render
         # Implement before call backs
@@ -419,11 +419,11 @@ class Menus::ViewTransaction < JoyUssdEngine::Menu
 end
 ```
 
-When the user enters 2 in the `Menus::InitialMenu` menu then the following will be rendered and the user session will be terminated.
+When the user enters 2 in the `Ussd::Menus::InitialMenu` menu then the following will be rendered and the user session will be terminated.
 
 ![transaction](./images/transactions_menu.png)
 
-The `Menus::ViewTransaction` menu uses the `joy_release` method to render out the text stored in the `@menu_text` variable and ends the user session.
+The `Ussd::Menus::ViewTransaction` menu uses the `joy_release` method to render out the text stored in the `@menu_text` variable and ends the user session.
 
 ### PaginateMenu
 
@@ -453,7 +453,7 @@ A `PaginateMenu` has the following properties in addition properties in [Menu](#
 #### PaginateMenu Example
 
 ```ruby
- class Menus::Books < JoyUssdEngine::PaginateMenu
+ class Ussd::Menus::Books < JoyUssdEngine::PaginateMenu
 
         def before_render
             # Implement before call backs
@@ -499,7 +499,7 @@ A `PaginateMenu` has the following properties in addition properties in [Menu](#
             # Render ussd menu here
 
             # The load_menu function points to a menu to load when a book is selected.
-            load_menu(Menus::ShowBook)
+            load_menu(Ussd::Menus::ShowBook)
         end
     end
 ```
@@ -516,10 +516,10 @@ When the user enters '#' we move to the next page in the list.
 
 ![paginate_menu2](./images/paginate_menu2.png)
 
-In the next menu (`Menus::ShowBook`) we have code that looks like this.
+In the next menu (`Ussd::Menus::ShowBook`) we have code that looks like this.
 
 ```ruby
-class Menus::ShowBook < Ussd::Menu
+class Ussd::Menus::ShowBook < JoyUssdEngine::Menu
     def before_render
         # Implement before call backs
         book = @context.get_state[:selected_book]
