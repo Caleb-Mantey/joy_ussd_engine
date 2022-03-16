@@ -43,7 +43,7 @@ module JoyUssdEngine
                 @context.set_state({"#{@current_client_state}_show_menu_initiation".to_sym =>  nil})
                 set_previous_state 
                 @context.current_menu = @current_client_state = next_menu
-                @context.load_menu(next_menu) 
+                @context.load_from_paginate_menu(next_menu) 
             end
         end
 
