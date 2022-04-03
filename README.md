@@ -29,6 +29,9 @@ A ruby library for building text based applications rapidly. It supports buildin
       - [PaginateMenu Properties](#paginatemenu-properties)
       - [PaginateMenu Methods](#paginatemenu-methods)
       - [PaginateMenu Example](#paginatemenu-example)
+  - [Transformer Configs](#transformer-configs)
+    - [Hubtel Transformer](#hubtel-transformer)
+    - [Twilio Transformer](#twilio-transformer)
   - [Development](#development)
   - [Contributing](#contributing)
   - [License](#license)
@@ -545,6 +548,108 @@ end
 When th user selects an item in the `PaginateMenu` we get the users selection with `@context.get_state[:selected_book]` and display the selected item back to the user and end the session.
 
 ![paginate_item_select](images/paginate_item_selected.png)
+
+## Transformer Configs
+
+Transformer configs for various providers. This configs can be used if you use any of these providers.
+
+### Hubtel Transformer
+
+```ruby
+class HubtelTransformer < JoyUssdEngine::DataTransformer
+    # Tranforms request and response payload between hubtel and our application
+    def request_params(params)
+        {
+            session_id: params[:Mobile],
+            message: params[:Message],
+            ClientState: params[:ClientState],
+            Type: params[:Type]
+            params: params
+        }
+    end
+
+    def app_terminator(params)
+        params[:Type] == 'Release' || (params[:Type] != "Initiation" && @context.get_state.blank?)
+    end
+
+    def response(message, client_state)
+        {
+            Type: "Response",
+            Message: message,
+            ClientState: client_state
+        }
+    end
+
+    def release(message)
+        {
+            Type: "Release",
+            Message: message,
+            ClientState: "End"
+        }
+    end
+
+    def expiration
+        60.seconds
+    end
+end
+```
+
+### Twilio Transformer
+
+```ruby
+class TwilioTransformer < JoyUssdEngine::DataTransformer
+    ACCOUNT_SID = "932843hwhjewhje7388"
+    AUTH_TOKEN = "3473847hewjrejrheeee"
+
+    def client
+        @client ||= Twilio::REST::Client.new(ACCOUNT_SID, AUTH_TOKEN)
+    end
+
+    # Tranforms request and response payload between twilio and our application
+    def request_params(params)
+        {
+            session_id: "0#{params[:From].last(9)}",
+            message: params[:Body],
+            Mobile: "0#{params[:From].last(9)}",
+            params: params
+        }
+    end
+
+    def app_terminator(params)
+        params[:Body] == 'end'
+    end
+
+    def response(message, client_state)
+        client.messages.create(
+            from: from,
+            to: to,
+            body: message
+        )
+        {message: message}
+    end
+
+    def release(message)
+        client.messages.create(
+            from: from,
+            to: to,
+            body: message
+        )
+        {message: message}
+    end
+
+    def expiration
+        # set expiration for different providers
+    end
+
+    def to
+        "whatsapp:+233#{@context.params[:Mobile].last(9)}"
+    end
+
+    def from
+        'whatsapp:+14155238886'
+    end
+end
+```
 
 ## Development
 
