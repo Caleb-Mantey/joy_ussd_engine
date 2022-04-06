@@ -9,7 +9,7 @@ module JoyUssdEngine
                 message: params[:Message],
                 ClientState: params[:ClientState],
                 Type: params[:Type]
-                params: params
+                data: params
             }
         end
 
@@ -29,7 +29,7 @@ module JoyUssdEngine
             {
                 Type: "Release",
                 Message: message,
-                ClientState: "End"
+                ClientState: "EndJoyUssdEngine"
             }
         end
 

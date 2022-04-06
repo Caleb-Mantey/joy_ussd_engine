@@ -25,7 +25,7 @@ module JoyUssdEngine
             @data = get_state
             # handles ending or terminating ussd based on provider response (HUBTEL, TWILIO, ETC.)
             # If a particular provider returns some sort of response that can terminate the app we do that check here
-            return @current_menu = end_point.to_s if @selected_provider.send("app_terminator", params) || @data[:ClientState] == 'EndJoyUssdEngineiuewhjsdj'
+            return @current_menu = end_point.to_s if @selected_provider.send("app_terminator", params) || @data[:ClientState] == 'EndJoyUssdEngine'
             
             @current_menu = @data[:ClientState].blank? ? start_point.to_s : @data[:ClientState]
         end

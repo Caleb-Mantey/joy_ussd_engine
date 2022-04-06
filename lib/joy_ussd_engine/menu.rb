@@ -31,7 +31,7 @@ module JoyUssdEngine
         def joy_release(error_message = "")
             @context.reset_state
             { 
-                ClientState: "EndJoyUssdEngineiuewhjsdj",
+                ClientState: "EndJoyUssdEngine",
                 data: @context.selected_provider.send("release", error_message.blank? ? @menu_text : error_message)
             }
         end
@@ -156,8 +156,8 @@ module JoyUssdEngine
             response = render
             response = response.blank? ? joy_response(current_client_state) : response
             after_render
-            save_state(response[:ClientState]) if response[:ClientState] != "EndJoyUssdEngineiuewhjsdj"
-            @context.reset_state if response[:ClientState] == "EndJoyUssdEngineiuewhjsdj" 
+            save_state(response[:ClientState]) if response[:ClientState] != "EndJoyUssdEngine"
+            @context.reset_state if response[:ClientState] == "EndJoyUssdEngine" 
             response[:data].blank? ? response : response[:data]
         end
 
@@ -193,8 +193,8 @@ module JoyUssdEngine
             response = render
             response = response.blank? ? joy_response(@current_client_state) : response
             after_render
-            save_state(response[:ClientState]) if response[:ClientState] != "EndJoyUssdEngineiuewhjsdj"
-            @context.reset_state if response[:ClientState] == "EndJoyUssdEngineiuewhjsdj" 
+            save_state(response[:ClientState]) if response[:ClientState] != "EndJoyUssdEngine"
+            @context.reset_state if response[:ClientState] == "EndJoyUssdEngine" 
             response
         end
 
@@ -210,8 +210,8 @@ module JoyUssdEngine
             response = render
             response = response.blank? ? joy_response(@current_client_state) : response
             after_render
-            save_state(response[:ClientState]) if response[:ClientState] != "EndJoyUssdEngineiuewhjsdj"
-            @context.reset_state if response[:ClientState] == "EndJoyUssdEngineiuewhjsdj" 
+            save_state(response[:ClientState]) if response[:ClientState] != "EndJoyUssdEngine"
+            @context.reset_state if response[:ClientState] == "EndJoyUssdEngine" 
             response[:data].blank? ? response : response[:data]
         end
     end

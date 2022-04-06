@@ -185,8 +185,8 @@ module JoyUssdEngine
             response = render
             response = response.blank? ? joy_response(@current_client_state) : response
             after_render
-            save_state(response[:ClientState]) if response[:ClientState] != "EndJoyUssdEngineiuewhjsdj"
-            @context.reset_state if response[:ClientState] == "EndJoyUssdEngineiuewhjsdj" 
+            save_state(response[:ClientState]) if response[:ClientState] != "EndJoyUssdEngine"
+            @context.reset_state if response[:ClientState] == "EndJoyUssdEngine" 
             response[:data].blank? ? response : response[:data]
         end
     end

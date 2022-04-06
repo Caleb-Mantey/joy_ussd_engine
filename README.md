@@ -564,7 +564,7 @@ class HubtelTransformer < JoyUssdEngine::DataTransformer
             message: params[:Message],
             ClientState: params[:ClientState],
             Type: params[:Type]
-            params: params
+            data: params
         }
     end
 
@@ -611,7 +611,7 @@ class TwilioTransformer < JoyUssdEngine::DataTransformer
             session_id: "0#{params[:From].last(9)}",
             message: params[:Body],
             Mobile: "0#{params[:From].last(9)}",
-            params: params
+            data: params
         }
     end
 
