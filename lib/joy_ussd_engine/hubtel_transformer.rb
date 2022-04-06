@@ -32,9 +32,5 @@ module JoyUssdEngine
                 ClientState: "EndJoyUssdEngine"
             }
         end
-
-        def expiration
-            60.seconds
-        end
     end
 end

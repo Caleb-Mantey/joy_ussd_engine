@@ -8,7 +8,7 @@ module JoyUssdEngine
             # what our application can understand
             attr_reader :context
             def initialize(context)
-                @context = context
+                @context = context 
             end
 
             def request_params(params)
@@ -30,6 +30,7 @@ module JoyUssdEngine
 
             def expiration
                 # set expiration for different providers
+                @context.expiration.blank? ? 60.seconds : @expiration
             end
         end
 end

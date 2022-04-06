@@ -5,6 +5,7 @@ require 'joy_ussd_engine/menu'
 require 'joy_ussd_engine/paginate_menu'
 require 'joy_ussd_engine/data_transformer'
 require 'joy_ussd_engine/session_manager'
+require 'joy_ussd_engine/hubtel_transformer'
 
 
 module JoyUssdEngine
@@ -13,11 +14,12 @@ module JoyUssdEngine
         include JoyUssdEngine::SessionManager
         
         attr_reader :params, :selected_provider
-        attr_accessor :current_menu, :last_menu
+        attr_accessor :current_menu, :last_menu, :expiration
 
-        def initialize(params, provider, start_point: nil, end_point: nil )
+        def initialize(params, provider, start_point: nil, end_point: nil, expiration: nil )
 
             # gets provider currently in use and convert params to match ussd engines params
+            @expiration = expiration
             @selected_provider =  provider.new(self)
             convert_params =  @selected_provider.send("request_params",params)
             @params = convert_params
@@ -42,6 +44,10 @@ module JoyUssdEngine
 
         def process
             load_menu(@current_menu)
+        end
+
+        def expiration
+          @expiration
         end
   end
 end
