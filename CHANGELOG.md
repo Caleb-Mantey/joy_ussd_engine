@@ -7,3 +7,7 @@
 ## [0.1.2] - 2022-03-16
 
 - Fixed bug in routing menu
+
+## [0.1.5] - 2022-04-06
+
+- Added configs for using hubtel ussd
