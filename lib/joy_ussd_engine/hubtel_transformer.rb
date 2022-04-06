@@ -1,4 +1,3 @@
-require 'data_transformer'
 
 module JoyUssdEngine
     class HubtelTransformer < JoyUssdEngine::DataTransformer
@@ -8,7 +7,7 @@ module JoyUssdEngine
                 session_id: params[:Mobile],
                 message: params[:Message],
                 ClientState: params[:ClientState],
-                Type: params[:Type]
+                Type: params[:Type],
                 data: params
             }
         end
