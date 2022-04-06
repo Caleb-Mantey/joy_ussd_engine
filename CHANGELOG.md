@@ -10,4 +10,8 @@
 
 ## [0.1.5] - 2022-04-06
 
-- Added configs for using hubtel ussd
+- Added configs for hubtel ussd
+
+## [0.1.6] - 2022-04-06
+
+- Fixed bug in hubtel ussd configs
