@@ -146,7 +146,8 @@ class Ussd::Transformers::HubtelTransformer < JoyUssdEngine::DataTransformer
             session_id: params[:Mobile],
             message: params[:Message],
             ClientState: params[:ClientState],
-            Type: params[:Type]
+            Type: params[:Type],
+            data: params
         }
     end
 
