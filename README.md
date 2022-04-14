@@ -89,7 +89,7 @@ class MyController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def create
-    joy_ussd_engine = JoyUssdEngine::Core.new(ussd_params, Ussd::Transformers::HubtelTransformer, start_point: Ussd::Menus::StartMenu, end_point: Ussd::Menus::EndMenu)
+    joy_ussd_engine = JoyUssdEngine::Core.new(ussd_params, JoyUssdEngine::HubtelTransformer, start_point: Ussd::Menus::StartMenu, end_point: Ussd::Menus::EndMenu)
     response = joy_ussd_engine.process
     render json: response, status: :created
   end
