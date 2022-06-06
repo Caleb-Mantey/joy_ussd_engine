@@ -105,6 +105,7 @@ module JoyUssdEngine
             return if @skip_save
             data = @context.get_state
             @previous_client_state = @current_client_state
+            return if data[:"#{@field_name}"].present?
             # @context.set_state({"#{data[:field]}".to_sym => @context.params[:message]}) unless data[:field].blank?
             @context.set_state({ClientState: state, PrevClientState: @previous_client_state , field: @field_name, field_error: @field_error, error_text: @error_text})
         end
@@ -112,8 +113,25 @@ module JoyUssdEngine
         def save_field_value
             data = get_previous_state
             return if @skip_save
+            return if data[:"#{data[:field]}"].present?
             @context.set_state({"#{data[:field]}".to_sym => @context.params[:message]}) unless data[:field].blank?
         end
+
+        # def save_state_load_menu(state)
+        #     return if @skip_save
+        #     data = @context.get_state
+        #     @previous_client_state = @current_client_state
+        #     # @context.set_state({"#{data[:field]}".to_sym => @context.params[:message]}) unless data[:field].blank?
+        #     return if data[:"#{@field_name}"].present?
+        #     @context.set_state({ClientState: state, PrevClientState: @previous_client_state , field: @field_name, field_error: @field_error, error_text: @error_text})
+        # end
+
+        # def save_field_value_load_menu
+        #     data = get_previous_state
+        #     return if @skip_save
+        #     return if data[:"#{data[:field]}"].present?
+        #     @context.set_state({"#{data[:field]}".to_sym => @context.params[:message]}) unless data[:field].blank?
+        # end
 
         def get_previous_state
             data = @context.get_state
@@ -148,10 +166,16 @@ module JoyUssdEngine
             joy_release(@error_text)
         end
 
+        def remove_error_field
+            data = @context.get_state
+            @context.set_state({"#{@field_name}".to_sym => nil})
+        end
+
         def render_field_error
             before_show_menu
             before_render
             on_error
+            remove_error_field
             return render_menu_error[:data] if menu_error
             response = render
             response = response.blank? ? joy_response(current_client_state) : response
