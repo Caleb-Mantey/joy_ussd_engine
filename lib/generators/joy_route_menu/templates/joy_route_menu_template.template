@@ -1,11 +1,7 @@
 class Ussd::Menus::<%= menu_name.camelcase %>Menu < JoyUssdEngine::Menu
-    def on_validate
-        # User input validation
-    end
-
     def before_render
         # Implement before call backs
-        # @field_name="<%= menu_name.underscore %>"
+        @field_name="<%= menu_name.underscore %>"
 
         # title = "Welcome to the <%= menu_name.camelcase %> menu"
 
@@ -20,9 +16,20 @@ class Ussd::Menus::<%= menu_name.camelcase %>Menu < JoyUssdEngine::Menu
         # @menu_text = show_menu(title)
     end
 
+    def on_validate
+        # User input validation
+        # if @context.get_state[:<%= menu_name.underscore %>] == "Hello"
+        #   @field_error = true
+        #   @error_text = "Sorry! Make sure you entered `Hello`."
+        # end
+    end
+
     def on_error
-        # Render error 
+        # Render error and wait for new user input
         # @menu_text = "#{@error_text}\n#{@menu_text }"
+
+        # OR Render Error and Terminate App Session
+        # return raise_error(@error_text) 
     end
 
     def after_render
