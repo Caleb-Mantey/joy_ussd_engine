@@ -209,12 +209,12 @@ module JoyUssdEngine
         def run
             save_field_value
             do_validation
-            before_show_menu
-            before_render
             return render_menu_error[:data] if @menu_error
             if allow_validation
                 return render_previous if @previous_menu.field_error
             end
+            before_show_menu
+            before_render
             response = render
             response = response.blank? ? joy_response(@current_client_state) : response
             after_render
@@ -226,12 +226,12 @@ module JoyUssdEngine
         def execute
             save_field_value
             do_validation
-            before_show_menu
-            before_render
             return render_menu_error[:data] if @menu_error
             if allow_validation
                 return render_previous if @previous_menu.field_error
             end
+            before_show_menu
+            before_render
             response = render
             response = response.blank? ? joy_response(@current_client_state) : response
             after_render
