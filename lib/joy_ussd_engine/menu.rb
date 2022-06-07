@@ -106,6 +106,7 @@ module JoyUssdEngine
             data = @context.get_state
             @previous_client_state = @current_client_state
             return if data[:"#{@field_name}"].present?
+            return @context.set_state({ClientState: state, PrevClientState: @previous_client_state}) if @field_name.blank?
             # @context.set_state({"#{data[:field]}".to_sym => @context.params[:message]}) unless data[:field].blank?
             @context.set_state({ClientState: state, PrevClientState: @previous_client_state , field: @field_name, field_error: @field_error, error_text: @error_text})
         end
