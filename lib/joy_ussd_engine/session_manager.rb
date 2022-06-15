@@ -6,12 +6,12 @@ module JoyUssdEngine::SessionManager
     end
   
     def user_mobile_number
-      @user_mobile_number ||= get_state[:"session_id"]
+      @user_mobile_number ||= get_state[:"#{@session_id}"]
     end
   
     # Retrive Session Data
     def get_state
-      session_id = params["session_id"]
+      session_id = params[:"#{@session_id}"]
       REDIS.with do |conn|
         data = conn.get(session_id)
         return {} if data.blank?
@@ -21,7 +21,7 @@ module JoyUssdEngine::SessionManager
   
     # Store USSD sessions in Redis with Expiry
     def set_state(payload = {})
-      session_id = params["session_id"]
+      session_id = params[:"#{@session_id}"]
       current_data = get_state
       REDIS.with do |conn|
         payload = current_data.merge(params.merge(payload))
@@ -32,7 +32,7 @@ module JoyUssdEngine::SessionManager
   
     # Delete Session payload
     def reset_state
-      session_id = params["session_id"]
+      session_id = params[:"#{@session_id}"]
       REDIS.with do |conn|
         conn.del(session_id)
       end
