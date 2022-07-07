@@ -13,6 +13,10 @@ module JoyUssdEngine
             }
         end
 
+        def app_initiator(params)
+            params[:Type] == 'Initiation'
+        end
+
         def app_terminator(params)
             params[:Type] == 'Release' || (params[:Type] != "Initiation" && @context.get_state.blank?)
         end
