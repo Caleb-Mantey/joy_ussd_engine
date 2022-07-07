@@ -29,7 +29,12 @@ module JoyUssdEngine
             # If a particular provider returns some sort of response that can terminate the app we do that check here
             return @current_menu = end_point.to_s if @selected_provider.send("app_terminator", params) || @data[:ClientState] == 'EndJoyUssdEngine'
             
-            @current_menu = @data[:ClientState].blank? || @selected_provider.send("app_initiator", params) ? start_point.to_s : @data[:ClientState]
+            if(@selected_provider.send("app_initiator", params) ){
+              @current_menu =  start_point.to_s
+              reset_state
+              return
+            }
+            @current_menu = @data[:ClientState].blank? ? start_point.to_s : @data[:ClientState]
         end
 
         def load_menu(name)
