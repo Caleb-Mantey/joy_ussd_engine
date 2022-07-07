@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    joy_ussd_engine (0.1.13)
+    joy_ussd_engine (0.1.14)
       will_paginate (~> 3.3.0)
 
 GEM
